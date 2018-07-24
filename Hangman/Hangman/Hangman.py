@@ -43,10 +43,7 @@ WORD_LIST = '''cat dog apple banana spider stork eagle ferret panda shark anacon
 
 
 def initVariables():
-    missedLetters = ''
-    correctLetters = ''
-    secretWord = getRandomWord()
-    gameIsDone = False
+    return '', '', getRandomWord(), False
 
 
 #fetch a random word from the word list
@@ -92,10 +89,7 @@ def getGuess(alreadyGuessed):
 
 def main():
     print('HANGMAN')
-    missedLetters = ''
-    correctLetters = ''
-    secretWord = getRandomWord()
-    gameIsDone = False
+    missedLetters, correctLetters, secretWord, gameIsDone = initVariables()
 
     while True:
         displayBoard(missedLetters, correctLetters, secretWord)
@@ -111,7 +105,7 @@ def main():
                     break;
 
             if foundAllLetters:
-                print('Yes! The secret word is {0:s}. You have won !'.format(secretWord))
+                print('Yes! The secret word is \'{0:s}\'. You have won !'.format(secretWord))
                 gameIsDone = True
 
         else:
@@ -119,14 +113,12 @@ def main():
             # check if player has lost
             if len(missedLetters) == len(HANGMAN_PICS) -1:
                 displayBoard(missedLetters, correctLetters, secretWord)
-                print('You have run out of guesses !. The secret word was {0}'.format(secretWord))
+                print('You have run out of guesses !. The secret word was \'{0}\''.format(secretWord))
                 gameIsDone = True
 
         if gameIsDone:
             if playAgain():
-                missedLetters = ''
-                correctLetters = ''
-                secretWord = getRandomWord()
+                missedLetters, correctLetters, secretWord, gameIsDone = initVariables()
             else:
                 break;
 
