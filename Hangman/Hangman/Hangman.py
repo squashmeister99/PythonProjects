@@ -37,21 +37,28 @@ HANGMAN_PICS = ['''
    / \  |
        ===''']
 
-WORD_LIST = '''cat dog apple banana spider stork eagle ferret panda shark anaconda crocodile alligator pirhana
-                orca '''.split()
+
+WORDS_AND_CATEGORIES = {"Colors":"red blue green yellow magenta purple indigo white black".split(),
+                        "Shapes":"triangle square diamond rhombus pentagon rectangle ellipse octagon".split,
+                        "Fruits":"apple orange banana kiwi mango jackfruit guava strawberry".split()}
 
 def initVariables():
     return '', '', getRandomWord(), False
 
 #fetch a random word from the word list
 def getRandomWord():
-    return WORD_LIST[random.randint(0, len(WORD_LIST) - 1)]
+    category = random.choice(list(WORDS_AND_CATEGORIES.keys()))
+    wordList = WORDS_AND_CATEGORIES[category]
+    return (category, wordList[random.randint(0, len(wordList) - 1)])
 
 def playAgain():
     print('Do you want to play again? (yes or no)')
     return input().lower().startswith('y')
 
-def displayBoard(missedLetters, correctLetters, secretWord):
+def displayBoard(missedLetters, correctLetters, secretWordTuple):
+    category = secretWordTuple[0]
+    secretWord = secretWordTuple[1]
+    print('word category = {0}'.format(category))
     print(HANGMAN_PICS[len(missedLetters)])
     print()
 
@@ -86,10 +93,13 @@ def getGuess(alreadyGuessed):
 
 def main():
     print('HANGMAN')
-    missedLetters, correctLetters, secretWord, gameIsDone = initVariables()
+    missedLetters, correctLetters, secretWordTuple, gameIsDone = initVariables()
+    category = secretWordTuple[0]
+    secretWord = secretWordTuple[1]
+    
 
     while True:
-        displayBoard(missedLetters, correctLetters, secretWord)
+        displayBoard(missedLetters, correctLetters, secretWordTuple)
 
         guess = getGuess(missedLetters + correctLetters)
         if guess in secretWord:
@@ -109,15 +119,18 @@ def main():
             missedLetters += guess
             # check if player has lost
             if len(missedLetters) == len(HANGMAN_PICS) -1:
-                displayBoard(missedLetters, correctLetters, secretWord)
+                displayBoard(missedLetters, correctLetters, secretWordTuple)
                 print('You have run out of guesses !. The secret word was \'{0}\''.format(secretWord))
                 gameIsDone = True
 
         if gameIsDone:
             if playAgain():
-                missedLetters, correctLetters, secretWord, gameIsDone = initVariables()
+                    missedLetters, correctLetters, secretWordTuple, gameIsDone = initVariables()
+                    secretWord = secretWordTuple[1]
+                    category = secretWordTuple[0]
             else:
                 break;
+
 
 
 if __name__ == "__main__":

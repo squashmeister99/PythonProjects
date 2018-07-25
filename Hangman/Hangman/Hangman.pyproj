@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>28a68814-7773-4dab-850d-19f4f5bc01a2</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>hasInternet.py</StartupFile>
+    <StartupFile>Hangman.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
