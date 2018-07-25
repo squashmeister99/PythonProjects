@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>28a68814-7773-4dab-850d-19f4f5bc01a2</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Hangman.py</StartupFile>
+    <StartupFile>hasInternet.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -23,6 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Hangman.py" />
+    <Compile Include="hasInternet.py" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

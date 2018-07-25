@@ -40,11 +40,8 @@ HANGMAN_PICS = ['''
 WORD_LIST = '''cat dog apple banana spider stork eagle ferret panda shark anaconda crocodile alligator pirhana
                 orca '''.split()
 
-
-
 def initVariables():
     return '', '', getRandomWord(), False
-
 
 #fetch a random word from the word list
 def getRandomWord():
