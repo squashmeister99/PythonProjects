@@ -7,27 +7,26 @@ class GameEngine:
     INIT_VALUE = " "
     # possible winning combinations
     WINNING_SET = [(1,2,3), (4,5,6), (7,8,9),   #horizontal
-                    (1,4,7), (2,5,8), (3,6,9),  #vertical
-                    (1,5,9), (7,5,3)]           #diagonals
+                        (1,4,7), (2,5,8), (3,6,9),  #vertical
+                        (1,5,9), (7,5,3)]           #diagonals
     board = []                                  #initial board
 
     CENTER = 5
     CORNERS = [1,3,7,9]
     SIDES = [2,4,6,8]
 
-    def __init__(self):
-        board = ["D"] + list(INIT_VALUE for x in range(1, 10))             #initialize the board
+    def __init__(self):    
+        self.board = ["D"] + list(" " for x in range(1, 10))             #initialize the board
 
-    def drawRow(self, row):
+    def _drawRow(self, row):
         # this function prints the current row
         print("{0} | {1} | {2}".format(row[0], row[1], row[2]))
 
     def drawBoard(self):
         #this function prints out the current board
-        print(" ")
-        drawRow(board[7:])
-        drawRow(board[4:7])
-        drawRow(board[1:4])
+        self._drawRow(self.board[7:])
+        self._drawRow(self.board[4:7])
+        self._drawRow(self.board[1:4])
 
     def chooseLetter(self):
         #lets the player choose whether he wants to be X or O
@@ -48,16 +47,16 @@ class GameEngine:
         if move == 0:   # special case for index = 0, which is ignored
             return False;
         else:
-            return board[move] == INIT_VALUE
+            return self.board[move] == self.INIT_VALUE
 
     def isBoardFull(self):
-        result =  True if INIT_VALUE not in board else False
+        result =  True if self.INIT_VALUE not in self.board else False
         return result
 
     #check if we have a winner
     def isWinner(self, letter):
-        for item in WINNING_SET:
-            x = [board[item[0]], board[item[1]], board[item[2]]] # construct a potential winning set
+        for item in self.WINNING_SET:
+            x = [self.board[item[0]], self.board[item[1]], self.board[item[2]]] # construct a potential winning set
             if x.count(x[0]) == len(x) and x[0] == letter:
                 return True;
 
@@ -65,18 +64,18 @@ class GameEngine:
 
     #check if we can win on next move. if true, return winning move
     def hasWinningMove(self, letter):
-        for item in WINNING_SET:
-            x = [board[item[0]], board[item[1]], board[item[2]]] # construct a potential winning set
+        for item in self.WINNING_SET:
+            x = [self.board[item[0]], self.board[item[1]], self.board[item[2]]] # construct a potential winning set
             if x.count(letter) == 2:
                 #find winning move
                 for idx, val in enumerate(x):
-                    if val == INIT_VALUE:
+                    if val == self.INIT_VALUE:
                         return (True, item[idx])
 
         return (False, None)
 
     def makeMove(self, move, letter):
-        board[move] = letter
+        self.board[move] = letter
 
 ####### class HumanPlayer #########################
 class HumanPlayer:
@@ -87,13 +86,19 @@ class HumanPlayer:
         
     def nextMove(self, board):
         move = 0
-        while move not in VALID_MOVES or not isSpaceFree(board, move):
-            print('what is your next move ?(1-9)')
-            move = int(input())
-            if not isSpaceFree(board, move):
-                print('the board position is not free. Pick another move (1-9)')
+        while move not in board.VALID_MOVES or not board.isSpaceFree(move):
+            try:
+                print('what is your next move ?(1-9)')
+                move = int(input())         
+                if not board.isSpaceFree(move):
+                    print('the board position is not free. Pick another move (1-9)')
+                else:
+                    break;
+            except ValueError:
+                    print('Invalid entry. Pick another move (1-9)')
+                
 
-        board.makeMove(move, self.letter)
+        board.makeMove(int(move), self.letter)
 
 ####### class ComputerPlayer #############################
 class ComputerPlayer:
@@ -103,7 +108,7 @@ class ComputerPlayer:
         self.letter = letter
 
     def nextMove(self, board):
-        nextMove = _getMove(board);
+        nextMove = self._getMove(board);
         board.makeMove(nextMove, self.letter)
 
     def _chooseRandomMove(self, board, moveList):
@@ -127,12 +132,12 @@ class ComputerPlayer:
             return winningMove
 
         #check if player has a winning move. if yes, then block it
-        willPlayerWinOnNextMove, blockingMove = board.hasWinningMove(board, _getPlayerLetter())
+        willPlayerWinOnNextMove, blockingMove = board.hasWinningMove(self._getPlayerLetter())
         if willPlayerWinOnNextMove:
             return blockingMove
 
         #take corners if available
-        nextMove = _chooseRandomMove(board,board.CORNERS)
+        nextMove = self._chooseRandomMove(board,board.CORNERS)
         if nextMove:
             return nextMove
 
@@ -141,7 +146,7 @@ class ComputerPlayer:
             return board.CENTER;
 
         #if we reach here, then pick a random move on the side
-        return _chooseRandomMove(board,board.SIDES)
+        return self._chooseRandomMove(board,board.SIDES)
 
 
 ################### main ####################
@@ -150,7 +155,7 @@ def main():
     print('Welcome to Tic-Tac-Toe')
     while True:
         game = GameEngine()
-        playerLetter, computerLetter = game.chooseLetter()                      # get letter choices
+        playerLetter, computerLetter = game.chooseLetter()                    
         human = HumanPlayer(playerLetter)
         computer = ComputerPlayer(computerLetter)
 
@@ -161,7 +166,7 @@ def main():
         while gameIsPlaying:
             if turn == "player":
                 game.drawBoard()
-                human.nextMove(game.board)
+                human.nextMove(game)
                
                 if game.isWinner(human.letter):
                     game.drawBoard()
@@ -176,10 +181,10 @@ def main():
                     else:
                         turn = "computer"
             else:
-                computer.nextMove(game.board)
+                computer.nextMove(game)
                 
                 if game.isWinner(computer.letter):
-                    drawBoard(board)
+                    game.drawBoard()
                     print("Computer has won ! Better luck next time")
                     gameIsPlaying = False
 

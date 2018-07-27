@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{77867bea-3eff-4f85-a4a2-7c14d51f5e82}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>TicTacToe.py</StartupFile>
+    <StartupFile>TicTacToe2.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
