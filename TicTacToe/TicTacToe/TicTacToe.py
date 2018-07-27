@@ -103,7 +103,7 @@ def hasWinningMove(board, letter):
         if x.count(letter) == 2:
             #find winning move
             for idx, val in enumerate(x):
-                if val != letter:
+                if val == INIT_VALUE:
                     return (True, item[idx])
 
     return (False, None)
@@ -127,44 +127,39 @@ def main():
                 move = getPlayerMove(board)
                 print("player move = {0}".format(move))
                 makeMove(board, move, playerLetter)
-                print(" ")
-                drawBoard(board)
 
-            if isWinner(board, playerLetter):
-                drawBoard(board)
-                print("Congratulations. You have won !")
-                gameIsPlaying = False
-
-            else:
-                if isBoardFull(board):
+                if isWinner(board, playerLetter):
                     drawBoard(board)
-                    print("The game is a tie!")
+                    print("Congratulations. You have won !")
                     gameIsPlaying = False
-                else:
-                    turn = "computer"
 
-            if turn == "computer":
+                else:
+                    if isBoardFull(board):
+                        drawBoard(board)
+                        print("The game is a tie!")
+                        break;
+                    else:
+                        turn = "computer"
+            else:
                 move = getComputerMove(board, (playerLetter, computerLetter))
                 makeMove(board, move, computerLetter)
 
-            if isWinner(board, computerLetter):
-                drawBoard(board)
-                print("Computer has won ! Better luck next time")
-                gameIsPlaying = False
-
-            else:
-                if isBoardFull(board):
+                if isWinner(board, computerLetter):
                     drawBoard(board)
-                    print("The game is a tie!")
+                    print("Computer has won ! Better luck next time")
                     gameIsPlaying = False
+
                 else:
-                    turn = "player"
+                    if isBoardFull(board):
+                        drawBoard(board)
+                        print("The game is a tie!")
+                        break
+                    else:
+                        turn = "player"
 
         print("do you want to play again ? (yes or no)")
         if not input().lower().startswith("y"):
             break;
-
-
 
 if __name__ == "__main__":
     main()
