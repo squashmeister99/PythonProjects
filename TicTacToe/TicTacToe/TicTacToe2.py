@@ -16,7 +16,7 @@ class GameEngine:
     SIDES = [2,4,6,8]
 
     def __init__(self):    
-        self.board = ["D"] + list(" " for x in range(1, 10))             #initialize the board
+        self.board = ["D"] + list(GameEngine.INIT_VALUE for x in range(1, 10))             #initialize the board
 
     def _drawRow(self, row):
         # this function prints the current row
@@ -47,15 +47,15 @@ class GameEngine:
         if move == 0:   # special case for index = 0, which is ignored
             return False;
         else:
-            return self.board[move] == self.INIT_VALUE
+            return self.board[move] == GameEngine.INIT_VALUE
 
     def isBoardFull(self):
-        result =  True if self.INIT_VALUE not in self.board else False
+        result =  True if GameEngine.INIT_VALUE not in self.board else False
         return result
 
     #check if we have a winner
     def isWinner(self, letter):
-        for item in self.WINNING_SET:
+        for item in GameEngine.WINNING_SET:
             x = [self.board[item[0]], self.board[item[1]], self.board[item[2]]] # construct a potential winning set
             if x.count(x[0]) == len(x) and x[0] == letter:
                 return True;
@@ -64,12 +64,12 @@ class GameEngine:
 
     #check if we can win on next move. if true, return winning move
     def hasWinningMove(self, letter):
-        for item in self.WINNING_SET:
+        for item in GameEngine.WINNING_SET:
             x = [self.board[item[0]], self.board[item[1]], self.board[item[2]]] # construct a potential winning set
             if x.count(letter) == 2:
                 #find winning move
                 for idx, val in enumerate(x):
-                    if val == self.INIT_VALUE:
+                    if val == GameEngine.INIT_VALUE:
                         return (True, item[idx])
 
         return (False, None)
