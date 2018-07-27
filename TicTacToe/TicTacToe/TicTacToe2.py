@@ -6,14 +6,13 @@ class GameEngine:
     VALID_MOVES = list((range(1,10)))
     INIT_VALUE = " "
     # possible winning combinations
-    WINNING_SET = [(1,2,3), (4,5,6), (7,8,9),   #horizontal
-                        (1,4,7), (2,5,8), (3,6,9),  #vertical
-                        (1,5,9), (7,5,3)]           #diagonals
-    board = []                                  #initial board
-
+    WINNING_SET = [(1,2,3), (4,5,6), (7,8,9),  #horizontal
+                   (1,4,7), (2,5,8), (3,6,9),  #vertical
+                   (1,5,9), (7,5,3)]           #diagonals
     CENTER = 5
     CORNERS = [1,3,7,9]
     SIDES = [2,4,6,8]
+    board = []
 
     def __init__(self):    
         self.board = ["D"] + list(GameEngine.INIT_VALUE for x in range(1, 10))             #initialize the board
@@ -28,29 +27,17 @@ class GameEngine:
         self._drawRow(self.board[4:7])
         self._drawRow(self.board[1:4])
 
-    def chooseLetter(self):
-        #lets the player choose whether he wants to be X or O
-        letter = ''
-        while not(letter == 'X' or letter == 'O'):
-            print("Do you want to be X or O?")
-            letter = input().upper()
-
-        if letter == "X":
-            return ("X", "O")
-        else:
-            return ("O", "X")
-
     def whoGoesFirst(self):
         return "computer" if random.randint(0,1) == 0 else "player"
 
     def isSpaceFree(self, move):
-        if move == 0:   # special case for index = 0, which is ignored
-            return False;
-        else:
-            return self.board[move] == GameEngine.INIT_VALUE
+        return self.board[move] == GameEngine.INIT_VALUE
 
     def isBoardFull(self):
         result =  True if GameEngine.INIT_VALUE not in self.board else False
+        if result:
+            self.drawBoard()
+            print("The game is a tie!")
         return result
 
     #check if we have a winner
@@ -81,8 +68,16 @@ class GameEngine:
 class HumanPlayer:
     letter = ''
 
-    def __init__(self, letter):
-        self.letter = letter
+    def chooseLetter(self):
+        #lets the player choose whether he wants to be X or O
+        choice = ''
+        while not(choice == 'X' or choice == 'O'):
+            print("Do you want to be X or O?")
+            choice = input().upper() 
+        self.letter = choice
+        
+    def getComputerLetter(self):
+        return "X" if self.letter == "O" else "O"
         
     def nextMove(self, board):
         move = 0
@@ -120,10 +115,7 @@ class ComputerPlayer:
             return None
 
     def _getPlayerLetter(self):
-        if self.letter == "X":
-            return "O"
-        else:
-            return "X"
+        return "X" if self.letter == "O" else "O"
 
     def _getMove(self, board):
         #check if computer has a winning move
@@ -148,17 +140,15 @@ class ComputerPlayer:
         #if we reach here, then pick a random move on the side
         return self._chooseRandomMove(board,board.SIDES)
 
-
 ################### main ####################
 
 def main():
     print('Welcome to Tic-Tac-Toe')
     while True:
         game = GameEngine()
-        playerLetter, computerLetter = game.chooseLetter()                    
-        human = HumanPlayer(playerLetter)
-        computer = ComputerPlayer(computerLetter)
-
+        human = HumanPlayer()
+        human.chooseLetter()                    
+        computer = ComputerPlayer(human.getComputerLetter())
         turn = game.whoGoesFirst()
         print("'{0}' will go first".format(turn))
         gameIsPlaying = True
@@ -172,11 +162,8 @@ def main():
                     game.drawBoard()
                     print("Congratulations. You have won !")
                     gameIsPlaying = False
-
                 else:
                     if game.isBoardFull():
-                        game.drawBoard()
-                        print("The game is a tie!")
                         break;
                     else:
                         turn = "computer"
@@ -187,11 +174,8 @@ def main():
                     game.drawBoard()
                     print("Computer has won ! Better luck next time")
                     gameIsPlaying = False
-
                 else:
                     if game.isBoardFull():
-                        game.drawBoard()
-                        print("The game is a tie!")
                         break;
                     else:
                         turn = "player"
