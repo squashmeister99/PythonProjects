@@ -1,6 +1,7 @@
 import random
 
 VALID_MOVES = list((range(1,10)))
+INIT_VALUE = " "
 
 # possible winning combinations
 WINNING_SET = [(1,2,3), (4,5,6), (7,8,9),   #horizontal
@@ -32,12 +33,11 @@ def chooseLetter():
 def whoGoesFirst():
     return "computer" if random.randint(0,1) == 0 else "player"
 
-
 def isSpaceFree(board, move):
     if move == 0:   # special case for index = 0, which is ignored
         return False;
     else:
-        return board[move] == ' '
+        return board[move] == INIT_VALUE
 
 def getPlayerMove(board):
     move = 0
@@ -58,7 +58,7 @@ def chooseRandomComputerMove(board, moveList):
         return None
 
 def isBoardFull(board):
-    result =  True if ' ' not in board else False
+    result =  True if INIT_VALUE not in board else False
     return result
 
 def getComputerMove(board, letterChoice):
@@ -71,8 +71,8 @@ def getComputerMove(board, letterChoice):
         return winningMove
 
     #check if player has a winning move. if yes, then block it
-    willWinOnNextMove, blockingMove = hasWinningMove(board, playerLetter)
-    if willWinOnNextMove:
+    willPlayerWinOnNextMove, blockingMove = hasWinningMove(board, playerLetter)
+    if willPlayerWinOnNextMove:
         return blockingMove
 
     #take corners if available
@@ -114,8 +114,8 @@ def makeMove(board, move, letter):
 def main():
     print('Welcome to Tic-Tac-Toe')
     while True:
-        board = list(' ' for x in range(10))             #initialize the board
-        playerLetter, computerLetter = chooseLetter()   # get letter choices
+        board = ["D"] + list(INIT_VALUE for x in range(1, 10))             #initialize the board
+        playerLetter, computerLetter = chooseLetter()                           # get letter choices
         turn = whoGoesFirst()
         print("'{0}' will go first".format(turn))
         gameIsPlaying = True
