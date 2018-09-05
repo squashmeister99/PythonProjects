@@ -1,41 +1,40 @@
 import numpy as np
+from numpy import genfromtxt
 import tkinter as tk
 from tkinter import filedialog
-from numpy import genfromtxt
 
-validset = {1,2,3,4,5,6,7,8,9}
+VALID_SET = {1,2,3,4,5,6,7,8,9}
 
 def loadPuzzle():
     root = tk.Tk().withdraw()
-    #file_path = filedialog.askopenfilename(initialdir=".\\", title="select a csv file containing sudoku puzzle")
-    my_data = genfromtxt("easy1.csv", delimiter=',', filling_values=0)
+    file_path = filedialog.askopenfilename(initialdir=".\\", title="select a csv file containing sudoku puzzle")
+    my_data = genfromtxt(file_path, delimiter=',', filling_values=0)
     puzzle = my_data.astype(int)
     print(puzzle)
     return puzzle
 
+
 def getMissingNumbers(myList):
-    return validset.difference(set(myList))
+    return VALID_SET.difference(set(myList))
+
 
 def getSubmatrixRange(x):  
-    x_min = 0
+    begin = 0
     if 0 <= x <= 2:
-        x_min = 0    
+        begin = 0    
     if 3 <= x <= 5:
-        x_min = 3
+        begin = 3
     if 6 <= x <= 8:
-        x_min = 6
+        begin = 6
    
     # return min and max indexes
-    return x_min, x_min + 2
+    return begin, begin + 3
 
 
 def getSubmatrix(puzzle, loc):
     x_begin, x_end = getSubmatrixRange(loc[0])
     y_begin, y_end = getSubmatrixRange(loc[1])
-    ixgrid = np.ix_([x_begin, x_end], [y_begin, y_end])
-    sub_matrix = puzzle[ixgrid]
-    print("-----submatrix-----")
-    print(sub_matrix)
+    sub_matrix = puzzle[x_begin:x_end, y_begin:y_end]
     return sub_matrix.ravel()
     
 
@@ -49,9 +48,11 @@ def getSolvedSet(puzzle):
 
     return solvedSet
 
+
 def printSolver(solver):
     for index in solver:
         print("({0}, {1}) = {2}".format(index[0], index[1], solver[index]))
+
 
 def getAllIndexes():
     allIndexes = []
@@ -65,37 +66,29 @@ def getAllIndexes():
 def main():
     puzzle = loadPuzzle()
     solvedState = getSolvedSet(puzzle)
-    solvedIndexes = solvedState.keys()
-    allIndexes = getAllIndexes()
-    unsolvedIndexes = set(allIndexes).difference(solvedIndexes)
+    solvedCells = solvedState.keys()
+    allCells = getAllIndexes()
+    unsolvedCells = set(allCells).difference(solvedCells)
 
-    for index in unsolvedIndexes:
-        row, col = index[0], index[1]
-        rowSet = getMissingNumbers(puzzle[row, :])
-        colSet = getMissingNumbers(puzzle[:, col])
-        validPossibilities = rowSet.difference(colSet)
+    while len(solvedCells) != puzzle.size :
+        for loc in unsolvedCells:
+            # evaluate rows and columns
+            rowSet = getMissingNumbers(puzzle[loc[0], :])
+            colSet = getMissingNumbers(puzzle[:, loc[1]])
+            temp1 = rowSet.intersection(colSet)
+            #evaluate submatrix
+            submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
+            candidateSet = temp1.intersection(submatrixSet)
+        
+            if len(candidateSet) == 1:
+                value = candidateSet.pop()
+                print("({0},{1}) = {2}".format(loc[0], loc[1], value))
+                # move the current cell to solved and update the puzzle
+                solvedState[loc] = [value]
+                puzzle[loc[0], loc[1]] = value
 
-        if row == 2 and col == 0:
-            temp = getSubmatrix(puzzle, index)
-            print(temp)
+    # if we get here the puzzle is solved
+    print(puzzle)
     
-    
-
-    #a = np.arange(100).reshape(10,10)
-    #print(a)
-    #for i in range(10):
-    #    print(a[i,:])
-
-    #for j in range(10):
-    #    print(a[:, j])
-
-    #b = a[0:3, 0:3]
-    #c = b.ravel()
-    #print(np.unique(c))
-    
-    #if 11 in b:
-    #    print("True")
-
-
 if __name__ == "__main__":
     main()
