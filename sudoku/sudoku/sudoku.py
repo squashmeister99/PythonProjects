@@ -6,6 +6,7 @@ from tkinter import filedialog
 VALID_SET = {1,2,3,4,5,6,7,8,9}
 
 def loadPuzzle():
+    """ loads a sudoku puzzle from a csv file """
     root = tk.Tk().withdraw()
     file_path = filedialog.askopenfilename(initialdir=".\\", title="select a csv file containing sudoku puzzle")
     my_data = genfromtxt(file_path, delimiter=',', filling_values=0)
@@ -15,10 +16,12 @@ def loadPuzzle():
 
 
 def getMissingNumbers(myList):
+    """ returns the set of missing sudoku numbers in the input list """
     return VALID_SET.difference(set(myList))
 
 
 def getSubmatrixRange(x):  
+    """ given a cell location, returns the bounds for the corresponding 3x3 submatrix """
     begin = 0
     if 0 <= x <= 2:
         begin = 0    
@@ -27,7 +30,6 @@ def getSubmatrixRange(x):
     if 6 <= x <= 8:
         begin = 6
    
-    # return min and max indexes
     return begin, begin + 3
 
 
@@ -66,12 +68,10 @@ def getAllIndexes():
 def solveCell(puzzle, loc):
     """ main solver algorithm for sudoku puzzle returns the
     viable candidates for a given cell"""
-
     # evaluate rows and columns
     rowSet = getMissingNumbers(puzzle[loc[0], :])
     colSet = getMissingNumbers(puzzle[:, loc[1]])
     tempSet = rowSet.intersection(colSet)
-    #evaluate submatrix
     submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
     candidateSet = tempSet.intersection(submatrixSet)
     return candidateSet
@@ -86,7 +86,7 @@ def main():
 
     while len(solvedCells) != puzzle.size :
         for loc in unsolvedCells:
-            candidateSet = solveCell(puzzle, loc)     
+            candidateSet = solveCell(puzzle, loc)
             if len(candidateSet) == 1:
                 value = candidateSet.pop()
                 print("({0},{1}) = {2}".format(loc[0], loc[1], value))
