@@ -16,10 +16,32 @@ def loadPuzzle():
 def getMissingNumbers(myList):
     return validset.difference(set(myList))
 
+def getSubmatrixRange(x):  
+    x_min = 0
+    if 0 <= x <= 2:
+        x_min = 0    
+    if 3 <= x <= 5:
+        x_min = 3
+    if 6 <= x <= 8:
+        x_min = 6
+   
+    # return min and max indexes
+    return x_min, x_min + 2
+
+
+def getSubmatrix(puzzle, loc):
+    x_begin, x_end = getSubmatrixRange(loc[0])
+    y_begin, y_end = getSubmatrixRange(loc[1])
+    ixgrid = np.ix_([x_begin, x_end], [y_begin, y_end])
+    sub_matrix = puzzle[ixgrid]
+    print("-----submatrix-----")
+    print(sub_matrix)
+    return sub_matrix.ravel()
+    
+
 def getSolvedSet(puzzle):
     solvedSet = {}
     rows, cols = puzzle.shape
-    print("rows = {0}, columns = {1}".format(rows, cols))
     for i in range(rows):
         for j in range(cols):
             if puzzle[i, j] > 0:
@@ -27,18 +49,35 @@ def getSolvedSet(puzzle):
 
     return solvedSet
 
-def printSolverState(solver):
+def printSolver(solver):
     for index in solver:
         print("({0}, {1}) = {2}".format(index[0], index[1], solver[index]))
 
+def getAllIndexes():
+    allIndexes = []
+    for x in range(9):
+        for y in range(9):
+            allIndexes.append((x,y))
 
+    return allIndexes
 
 
 def main():
     puzzle = loadPuzzle()
-
     solvedState = getSolvedSet(puzzle)
-    printSolverState(solvedState)
+    solvedIndexes = solvedState.keys()
+    allIndexes = getAllIndexes()
+    unsolvedIndexes = set(allIndexes).difference(solvedIndexes)
+
+    for index in unsolvedIndexes:
+        row, col = index[0], index[1]
+        rowSet = getMissingNumbers(puzzle[row, :])
+        colSet = getMissingNumbers(puzzle[:, col])
+        validPossibilities = rowSet.difference(colSet)
+
+        if row == 2 and col == 0:
+            temp = getSubmatrix(puzzle, index)
+            print(temp)
     
     
 
