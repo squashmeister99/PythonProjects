@@ -55,12 +55,26 @@ def printSolver(solver):
 
 
 def getAllIndexes():
+    """ returns a set of all possible cell indexes in a puzzle"""
     allIndexes = []
     for x in range(9):
         for y in range(9):
             allIndexes.append((x,y))
 
     return allIndexes
+
+def solveCell(puzzle, loc):
+    """ main solver algorithm for sudoku puzzle returns the
+    viable candidates for a given cell"""
+
+    # evaluate rows and columns
+    rowSet = getMissingNumbers(puzzle[loc[0], :])
+    colSet = getMissingNumbers(puzzle[:, loc[1]])
+    tempSet = rowSet.intersection(colSet)
+    #evaluate submatrix
+    submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
+    candidateSet = tempSet.intersection(submatrixSet)
+    return candidateSet
 
 
 def main():
@@ -72,14 +86,7 @@ def main():
 
     while len(solvedCells) != puzzle.size :
         for loc in unsolvedCells:
-            # evaluate rows and columns
-            rowSet = getMissingNumbers(puzzle[loc[0], :])
-            colSet = getMissingNumbers(puzzle[:, loc[1]])
-            temp1 = rowSet.intersection(colSet)
-            #evaluate submatrix
-            submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
-            candidateSet = temp1.intersection(submatrixSet)
-        
+            candidateSet = solveCell(puzzle, loc)     
             if len(candidateSet) == 1:
                 value = candidateSet.pop()
                 print("({0},{1}) = {2}".format(loc[0], loc[1], value))
