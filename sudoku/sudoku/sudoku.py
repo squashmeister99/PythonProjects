@@ -2,12 +2,16 @@ import numpy as np
 from numpy import genfromtxt
 import tkinter as tk
 from tkinter import filedialog
+import os
 
 VALID_SET = {1,2,3,4,5,6,7,8,9}
 
 def loadPuzzle():
-    root = tk.Tk().withdraw()
-    file_path = filedialog.askopenfilename(initialdir=".\\", title="select a csv file containing sudoku puzzle")
+    root = tk.Tk().withdraw() 
+    file_path = filedialog.askopenfilename(initialdir=os.getcwd(), title="select a csv file containing sudoku puzzle")
+    if not file_path:
+        exit()
+
     my_data = genfromtxt(file_path, delimiter=',', filling_values=0)
     puzzle = my_data.astype(int)
     print(puzzle)
@@ -16,6 +20,13 @@ def loadPuzzle():
 
 def getMissingNumbers(myList):
     return VALID_SET.difference(set(myList))
+
+
+def isValidSet(myList):
+    return len(getMissingNumbers(myList)) == 0
+
+def isPuzzleSolved(puzzle):
+    rows, cols = puzzle.shape
 
 
 def getSubmatrixRange(x):  
