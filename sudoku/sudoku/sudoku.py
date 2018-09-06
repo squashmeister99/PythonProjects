@@ -3,8 +3,22 @@ from numpy import genfromtxt
 import tkinter as tk
 from tkinter import filedialog
 import os
+from enum import Enum
+
+class PuzzleState(Enum):
+    SOLVED =    0
+    UNSOLVED =  1
+    INVALID =   2
 
 VALID_SET = {1,2,3,4,5,6,7,8,9}
+SUB_MATRIX_CENTERS = [(1,1), (1,4), (1,7), (4,1), (4,4), (4,7), (7,1), (7,4), (7,7)]
+
+def loadPuzzleDebug():
+    my_data = genfromtxt("expert_1.csv", delimiter=',', filling_values=0)
+    puzzle = my_data.astype(int)
+    print(puzzle)
+    return puzzle
+
 
 def loadPuzzle():
     root = tk.Tk().withdraw() 
@@ -23,11 +37,47 @@ def getMissingNumbers(myList):
     return VALID_SET.difference(set(myList))
 
 
-def isValidSet(myList):
+def isSolvedSet(myList):
     return len(getMissingNumbers(myList)) == 0
 
-def isPuzzleSolved(puzzle):
+def isValidSet(myList):
+    filledSet = [x for x in myList if x != 0]
+    return len(filledSet) == len(set(filledSet))
+
+def isPuzzleValid(puzzle):
+    """ iterates through the puzzle and verifies that it is valid"""
     rows, cols = puzzle.shape
+    for i in range(rows):
+        if not isValidSet(puzzle[i, :]):
+            return False
+
+    for i in range(cols):
+        if not isValidSet(puzzle[:,i]):
+            return False
+
+    for loc in SUB_MATRIX_CENTERS:
+        if not isValidSet(getSubmatrix(puzzle, loc)):
+            return False
+
+    return True
+
+
+def isPuzzleSolved(puzzle):
+    """ iterates through the puzzle and verifies that it is solved"""
+    rows, cols = puzzle.shape
+    for i in range(rows):
+        if not isSolvedSet(puzzle[i, :]):
+            return False
+
+    for i in range(cols):
+        if not isSolvedSet(puzzle[:,i]):
+            return False
+
+    for loc in SUB_MATRIX_CENTERS:
+        if not isSolvedSet(getSubmatrix(puzzle, loc)):
+            return False
+
+    return True
 
 
 def getSubmatrixRange(x):  
@@ -86,25 +136,46 @@ def solveCell(puzzle, loc):
     candidateSet = tempSet.intersection(submatrixSet)
     return candidateSet
 
-
-def main():
-    puzzle = loadPuzzle()
-    solvedState = getSolvedSet(puzzle)
-    solvedCells = solvedState.keys()
-    allCells = getAllIndexes()
-    unsolvedCells = set(allCells).difference(solvedCells)
-
-    while len(solvedCells) != puzzle.size :
+def runSolver(puzzle, solvedSet, unsolvedCells):
+    changeTracker = True
+    while len(solvedSet) != puzzle.size and changeTracker :
+        changeTracker = False
         for loc in unsolvedCells:
             candidateSet = solveCell(puzzle, loc)
             if len(candidateSet) == 1:
                 value = candidateSet.pop()
                 print("({0},{1}) = {2}".format(loc[0], loc[1], value))
                 # move the current cell to solved and update the puzzle
-                solvedState[loc] = [value]
+                solvedSet[loc] = [value]
                 puzzle[loc[0], loc[1]] = value
+                changeTracker = True
 
-    # if we get here the puzzle is solved
+    if not changeTracker:
+        return PuzzleState.UNSOLVED
+
+    # verify that the puzzle is solved
+    if isPuzzleSolved(puzzle):
+       return PuzzleState.SOLVED
+    else:
+        return PuzzleState.INVALID
+
+
+def main():
+    puzzle = loadPuzzleDebug()
+    solvedSet = getSolvedSet(puzzle)
+    solvedCells = solvedSet.keys()
+    allCells = getAllIndexes()
+    unsolvedCells = set(allCells).difference(solvedCells)
+
+    while True:
+        status = runSolver(puzzle, solvedSet, unsolvedCells)
+        if status == PuzzleState.SOLVED:
+            break
+
+        if status == PuzzleState.UNSOLVED:
+            print("puzzle is stuck")
+            break
+
     print(puzzle)
     
 if __name__ == "__main__":
