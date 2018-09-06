@@ -138,10 +138,17 @@ def solveCell(puzzle, loc):
 
 def runSolver(puzzle, solvedSet, unsolvedCells):
     changeTracker = True
+    unsolvedSet = {}
+    puzzleStatus = PuzzleState.UNSOLVED
     while len(solvedSet) != puzzle.size and changeTracker :
         changeTracker = False
         for loc in unsolvedCells:
             candidateSet = solveCell(puzzle, loc)
+
+            if len(candidateSet) == 0:
+                puzzleStatus = PuzzleState.INVALID
+                break;
+
             if len(candidateSet) == 1:
                 value = candidateSet.pop()
                 print("({0},{1}) = {2}".format(loc[0], loc[1], value))
@@ -149,31 +156,44 @@ def runSolver(puzzle, solvedSet, unsolvedCells):
                 solvedSet[loc] = [value]
                 puzzle[loc[0], loc[1]] = value
                 changeTracker = True
+            else:
+                unsolvedSet[loc] = candidateSet
 
     if not changeTracker:
-        return PuzzleState.UNSOLVED
+        puzzleState = PuzzleState.UNSOLVED
 
-    # verify that the puzzle is solved
     if isPuzzleSolved(puzzle):
-       return PuzzleState.SOLVED
-    else:
-        return PuzzleState.INVALID
+       puzzleState = PuzzleState.SOLVED
+
+    return puzzleState, unsolvedSet
+
+def getGuessList(unsolvedSet, guessSize = 2):
+    guessList = []
+    for loc in unsolvedSet:
+        if len(unsolvedSet[loc]) == guessSize:
+            for item in unsolvedSet[loc]:
+                guessList.append((loc, item))
+
+    return guessList
 
 
 def main():
     puzzle = loadPuzzleDebug()
+    puzzle_snapshot = puzzle.copy()
     solvedSet = getSolvedSet(puzzle)
     solvedCells = solvedSet.keys()
     allCells = getAllIndexes()
     unsolvedCells = set(allCells).difference(solvedCells)
 
     while True:
-        status = runSolver(puzzle, solvedSet, unsolvedCells)
+        status, unsolvedSet = runSolver(puzzle, solvedSet, unsolvedCells)
         if status == PuzzleState.SOLVED:
             break
 
         if status == PuzzleState.UNSOLVED:
             print("puzzle is stuck")
+            guessList = getGuessList(unsolvedSet)
+            puzzle_snapshot = puzzle.copy()
             break
 
     print(puzzle)
