@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 from enum import Enum
+from random import shuffle
 
 class PuzzleState(Enum):
     SOLVED =    0
@@ -14,7 +15,7 @@ VALID_SET = {1,2,3,4,5,6,7,8,9}
 SUB_MATRIX_CENTERS = [(1,1), (1,4), (1,7), (4,1), (4,4), (4,7), (7,1), (7,4), (7,7)]
 
 def loadPuzzleDebug():
-    my_data = genfromtxt("expert_1.csv", delimiter=',', filling_values=0)
+    my_data = genfromtxt("easy_4.csv", delimiter=',', filling_values=0)
     puzzle = my_data.astype(int)
     print(puzzle)
     return puzzle
@@ -154,7 +155,7 @@ def runSolver(puzzle, solvedSet, unsolvedCells):
                 print("({0},{1}) = {2}".format(loc[0], loc[1], value))
                 # move the current cell to solved and update the puzzle
                 solvedSet[loc] = [value]
-                puzzle[loc[0], loc[1]] = value
+                setCellValue(puzzle, loc, value)
                 changeTracker = True
             else:
                 unsolvedSet[loc] = candidateSet
@@ -167,6 +168,7 @@ def runSolver(puzzle, solvedSet, unsolvedCells):
 
     return puzzleState, unsolvedSet
 
+
 def getGuessList(unsolvedSet, guessSize = 2):
     guessList = []
     for loc in unsolvedSet:
@@ -174,8 +176,22 @@ def getGuessList(unsolvedSet, guessSize = 2):
             for item in unsolvedSet[loc]:
                 guessList.append((loc, item))
 
+    shuffle(guessList)
     return guessList
 
+def setCellValue(puzzle, cell, value):
+    """ cell is a tuple of the x,y indexes of the 2D array. This methods updates the specifies cell in the puzzle"""
+    puzzle[cell[0], cell[1]] = value
+
+def backup(puzzle, solvedSet, unsolvedCells, puzzle_snapshot, solvedSet_snapshot, unsolvedCells_snapshot):
+    puzzle_snapshot = puzzle.copy()
+    solvedSet_snapshot = solvedSet.copy()
+    unsolvedCells_snapshot = unsolvedCells.copy()
+
+def restore(puzzle, solvedSet, unsolvedCells, puzzle_snapshot, solvedSet_snapshot, unsolvedCells_snapshot):
+    puzzle = puzzle_snapshot.copy()
+    solvedSet = solvedSet_snapshot.copy() 
+    unsolvedCells = unsolvedCells_snapshot.copy() 
 
 def main():
     puzzle = loadPuzzleDebug()
@@ -184,7 +200,7 @@ def main():
     solvedCells = solvedSet.keys()
     allCells = getAllIndexes()
     unsolvedCells = set(allCells).difference(solvedCells)
-
+    guessList = []
     while True:
         status, unsolvedSet = runSolver(puzzle, solvedSet, unsolvedCells)
         if status == PuzzleState.SOLVED:
@@ -194,7 +210,17 @@ def main():
             print("puzzle is stuck")
             guessList = getGuessList(unsolvedSet)
             puzzle_snapshot = puzzle.copy()
-            break
+            #apply guess
+            nextGuess = guessList[0]
+            cell = nextGuess[0]
+            value = nextGuess[1]
+            setCellValue(puzzle, cell, value)
+
+        if status == PuzzleState.INVALID:
+            # guess is invalid. that means alternate value is valid
+            # get alternate value and apply that
+            puzzle = puzzle_snapshot.copy()
+    
 
     print(puzzle)
     
