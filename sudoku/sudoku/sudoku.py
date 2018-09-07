@@ -14,7 +14,10 @@ class PuzzleState(Enum):
 VALID_SET = {1,2,3,4,5,6,7,8,9}
 SUB_MATRIX_CENTERS = [(1,1), (1,4), (1,7), (4,1), (4,4), (4,7), (7,1), (7,4), (7,7)]
 
+VALID_INDEXES = {(x,y) for y in range(9) for x in range(9)}
+
 def loadPuzzleDebug():
+    """ load debug variant of the puzzle """
     my_data = genfromtxt("easy_4.csv", delimiter=',', filling_values=0)
     puzzle = my_data.astype(int)
     print(puzzle)
@@ -22,6 +25,7 @@ def loadPuzzleDebug():
 
 
 def loadPuzzle():
+    """ load the puzzle from a file """
     root = tk.Tk().withdraw() 
     file_path = filedialog.askopenfilename(initialdir=os.getcwd(), title="select a csv file containing sudoku puzzle")
     if not file_path:
@@ -40,6 +44,7 @@ def getMissingNumbers(myList):
 
 def isSolvedSet(myList):
     return len(getMissingNumbers(myList)) == 0
+
 
 def isValidSet(myList):
     filledSet = [x for x in myList if x != 0]
@@ -117,15 +122,6 @@ def printSolver(solver):
         print("({0}, {1}) = {2}".format(index[0], index[1], solver[index]))
 
 
-def getAllIndexes():
-    """ returns a set of all possible cell indexes in a puzzle"""
-    allIndexes = []
-    for x in range(9):
-        for y in range(9):
-            allIndexes.append((x,y))
-
-    return allIndexes
-
 def solveCell(puzzle, loc):
     """ main solver algorithm for sudoku puzzle returns the
     viable candidates for a given cell"""
@@ -141,7 +137,7 @@ def runSolver(puzzle, solvedSet, unsolvedCells):
     changeTracker = True
     unsolvedSet = {}
     puzzleStatus = PuzzleState.UNSOLVED
-    while len(solvedSet) != puzzle.size and changeTracker :
+    while len(solvedSet) != puzzle.size  :
         changeTracker = False
         for loc in unsolvedCells:
             candidateSet = solveCell(puzzle, loc)
@@ -160,24 +156,34 @@ def runSolver(puzzle, solvedSet, unsolvedCells):
             else:
                 unsolvedSet[loc] = candidateSet
 
+        unsolvedCells = VALID_INDEXES.difference(solvedSet.keys())
+
     if not changeTracker:
         puzzleState = PuzzleState.UNSOLVED
+        print("solved state size = {0}".format(len(solvedSet)))
 
     if isPuzzleSolved(puzzle):
        puzzleState = PuzzleState.SOLVED
 
     return puzzleState, unsolvedSet
 
-
-def getGuessList(unsolvedSet, guessSize = 2):
+def getGuessListHelper(unsolvedSet, guessSize):
     guessList = []
     for loc in unsolvedSet:
         if len(unsolvedSet[loc]) == guessSize:
-            for item in unsolvedSet[loc]:
-                guessList.append((loc, item))
-
+            guessList.append((loc, list(unsolvedSet[loc])))
     shuffle(guessList)
     return guessList
+
+
+def getGuessList(unsolvedSet):
+    """ returns a list of guesses"""
+    guessList = []
+    guessList.append(getGuessListHelper(unsolvedSet, 2))
+    guessList.append(getGuessListHelper(unsolvedSet, 3))
+    guessList.append(getGuessListHelper(unsolvedSet, 4))
+    return guessList
+
 
 def setCellValue(puzzle, cell, value):
     """ cell is a tuple of the x,y indexes of the 2D array. This methods updates the specifies cell in the puzzle"""
@@ -193,33 +199,42 @@ def restore(puzzle, solvedSet, unsolvedCells, puzzle_snapshot, solvedSet_snapsho
     solvedSet = solvedSet_snapshot.copy() 
     unsolvedCells = unsolvedCells_snapshot.copy() 
 
+def applyGuess(puzzle, solvedSet, unsolvedCells, guess):
+    """ applies the guess """
+    cell, possibleValues = guess[0], guess[1]
+    guessedValue = possibleValues[0]
+    setCellValue(puzzle, cell, guessedValue)
+    solvedSet[cell] = [guessedValue]
+    unsolvedCells.remove(cell)
+
+
 def main():
-    puzzle = loadPuzzleDebug()
-    puzzle_snapshot = puzzle.copy()
+    puzzle = loadPuzzle()
     solvedSet = getSolvedSet(puzzle)
-    solvedCells = solvedSet.keys()
-    allCells = getAllIndexes()
-    unsolvedCells = set(allCells).difference(solvedCells)
+    unsolvedCells = VALID_INDEXES.difference(solvedSet.keys())
     guessList = []
+    s1 = puzzle.copy()
+    s2 = solvedSet.copy()
+    s3 = unsolvedCells.copy()
+
     while True:
         status, unsolvedSet = runSolver(puzzle, solvedSet, unsolvedCells)
+        
         if status == PuzzleState.SOLVED:
             break
 
         if status == PuzzleState.UNSOLVED:
             print("puzzle is stuck")
             guessList = getGuessList(unsolvedSet)
-            puzzle_snapshot = puzzle.copy()
+            backup(puzzle, solvedSet, unsolvedCells, s1, s2, s3)
             #apply guess
-            nextGuess = guessList[0]
-            cell = nextGuess[0]
-            value = nextGuess[1]
-            setCellValue(puzzle, cell, value)
+            applyGuess(puzzle, solvedSet, unsolvedCells, guessList[0])
 
         if status == PuzzleState.INVALID:
             # guess is invalid. that means alternate value is valid
-            # get alternate value and apply that
-            puzzle = puzzle_snapshot.copy()
+            # apply alternate guess value
+            break;
+            
     
 
     print(puzzle)
