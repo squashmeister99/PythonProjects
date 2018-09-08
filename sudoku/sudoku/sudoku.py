@@ -130,7 +130,7 @@ def runSolver(puzzle, solvedSet):
     unsolvedCells = VALID_INDEXES.difference(solvedSet.keys())
     puzzleStatus = PuzzleState.UNSOLVED
 
-    while len(solvedSet) != puzzle.size  :
+    while len(solvedSet) != puzzle.size and puzzleStatus != PuzzleState.INVALID  :
         oldSize = len(unsolvedCells)
         for loc in unsolvedCells:
             candidateSet = solveCell(puzzle, loc)
@@ -140,26 +140,33 @@ def runSolver(puzzle, solvedSet):
                 break;
 
             if len(candidateSet) == 1:
-                value = candidateSet.pop()
-                
+                value = candidateSet.pop()             
                 # move the current cell to solved and update the puzzle
                 solvedSet[loc] = [value]
                 setCellValue(puzzle, loc, value)
+                if loc in unsolvedSet:
+                    unsolvedSet.pop(loc)
+
             else:
                 unsolvedSet[loc] = candidateSet
 
         unsolvedCells = VALID_INDEXES.difference(solvedSet.keys())
 
         if(len(unsolvedCells) == oldSize):
-            puzzleState = PuzzleState.UNSOLVED
+            puzzleStatus = PuzzleState.UNSOLVED
             print("solved state size = {0}".format(len(solvedSet)))
             break;
 
     if isPuzzleSolved(puzzle):
-       puzzleState = PuzzleState.SOLVED
+       puzzleStatus = PuzzleState.SOLVED
+
+    if not isPuzzleValid(puzzle):
+       puzzleStatus = PuzzleState.INVALID
 
     print(puzzle)
-    return puzzleState, unsolvedSet
+    print("solved size = {0}, unsolved cells = {1}, unsolved set = {2}".format(len(solvedSet), len(unsolvedCells), len(unsolvedSet)))
+    #assert(len(unsolvedCells) == len(unsolvedSet))
+    return puzzleStatus, unsolvedSet
 
 def getGuessList(unsolvedSet):
     """ returns a list of guesses"""
@@ -176,7 +183,8 @@ def getGuessList(unsolvedSet):
     for loc in unsolvedSet:
         if len(unsolvedSet[loc]) > 3:
             guessList.append((loc, list(unsolvedSet[loc])))
-    
+
+    print("guess list size = {0}".format(len(guessList)))
     return guessList
 
 def setCellValue(puzzle, cell, value):
@@ -238,7 +246,6 @@ def main():
             # update the puzzle from the snapshot state
             # apply the guess
             print("puzzle is in unsolved state")
-
             guessList = getGuessList(unsolvedSet)
             saveOrRestoreSnapshot(solvedSet, solver_snapshot)
             updatePuzzle(puzzle, solvedSet)
@@ -260,8 +267,7 @@ def main():
                 print(cell, value)
                  
             updatePuzzle(puzzle, solvedSet)
-            updateSnapshot(solvedSet, solvedSet_snapshot)
-            break;
+            updateSnapshot(solvedSet, solver_snapshot)
             
     print(puzzle)
     
