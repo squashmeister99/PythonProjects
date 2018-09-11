@@ -127,7 +127,6 @@ class PuzzleSolver:
             guess = self.currentGuess
             cell = guess[0]
             possibleValues = guess[1]
-            # remove the first guess since it is invalid, and return the rest
             possibleValues.pop(0)
             if len(possibleValues) == 1:
                 self.setSolvedCellValue(cell, possibleValues[0])
@@ -152,13 +151,13 @@ class PuzzleSolver:
             if len(unsolvedSet[loc]) == 2:
                 guessList.append((loc, list(unsolvedSet[loc])))
 
-        #for loc in unsolvedSet:
-        #    if len(unsolvedSet[loc]) == 3:
-        #        guessList.append((loc, list(unsolvedSet[loc])))
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) == 3:
+                guessList.append((loc, list(unsolvedSet[loc])))
 
-        #for loc in unsolvedSet:
-        #    if len(unsolvedSet[loc]) > 3:
-        #        guessList.append((loc, list(unsolvedSet[loc])))
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) > 3:
+                guessList.append((loc, list(unsolvedSet[loc])))
     
         return guessList
 
@@ -199,11 +198,9 @@ class PuzzleSolver:
         for i in range(rows):
             if not PuzzleSolver.isSolvedSet(puzzle[i, :]):
                 return False
-
         for i in range(cols):
             if not PuzzleSolver.isSolvedSet(puzzle[:,i]):
                 return False
-
         for loc in SUB_MATRIX_CENTERS:
             if not PuzzleSolver.isSolvedSet(PuzzleSolver.getSubmatrix(puzzle, loc)):
                 return False
@@ -266,10 +263,6 @@ class PuzzleSolver:
                 break
 
             if status == PuzzleState.UNSOLVED:    
-                # build a list of viable guesses
-                # save a snapshot
-                # update the puzzle from the snapshot state
-                # apply the guess
                 print("puzzle is in unsolved state") 
                 self.createOrRestoreSnapshot()
                 self.updatePuzzle()
@@ -277,10 +270,6 @@ class PuzzleSolver:
                       
             if status == PuzzleState.INVALID:
                 print("puzzle is in invalid state")
-                # restore snapsot
-                # get correct guess
-                # apply guess
-                # update snapshot
                 self.createOrRestoreSnapshot()
                 self.processValidGuessAlternative()
                 self.updateSnapshot()
@@ -291,12 +280,10 @@ class PuzzleSolver:
                         
         print(self.puzzle)
         
-
-    
-   
+ 
 def main():
     p = PuzzleSolver()
-    p.loadPuzzleDebug()
+    p.loadPuzzle()
     p.solve()
   
 if __name__ == "__main__":
