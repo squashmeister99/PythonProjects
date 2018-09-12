@@ -23,8 +23,8 @@ class PuzzleSolver:
        self.puzzle = None
        self.solvedSet = {}
        self.unsolvedSet = {}
-       self.puzzleStatus = PuzzleState.UNSOLVED
        self.guessList = {}
+       self.oldGuessList = {}
        self.currentGuess = None
        self.solvedStateSnapshot = None
        self.unsolvedStateSnapshot = None
@@ -36,7 +36,7 @@ class PuzzleSolver:
         else:
            self.solvedSet = copy.deepcopy(self.solvedStateSnapshot)
            self.unsolvedSet = copy.deepcopy(self.unsolvedStateSnapshot)
-           
+
     def updateSnapshot(self):
         self.solvedStateSnapshot = copy.deepcopy(self.solvedSet)
         self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedSet) 
@@ -60,8 +60,7 @@ class PuzzleSolver:
         self.initializeSolvedSet()
         print(self.puzzle)
 
-    def runSolver(self):
-        #self.unsolvedSet.clear()      
+    def runSolver(self):     
         puzzleStatus = PuzzleState.UNSOLVED
         hasChangedSinceLastIteration = True
 
@@ -84,15 +83,14 @@ class PuzzleSolver:
                         self.unsolvedSet.pop(loc)
                     hasChangedSinceLastIteration = True
                 else:
-                    self.unsolvedSet[loc] = candidateSet
+                    self.unsolvedSet[loc] = list(candidateSet)
 
             if not unsolvedCells:
                 puzzleStatus = PuzzleState.SOLVED
                 break
 
             if not hasChangedSinceLastIteration:
-                puzzleStatus = PuzzleState.UNSOLVED
-                print("solved state size = {0}".format(len(self.solvedSet)))
+                puzzleStatus = PuzzleState.UNSOLVED 
                 break;
 
         if not PuzzleSolver.isPuzzleValid(self.puzzle):
@@ -115,35 +113,41 @@ class PuzzleSolver:
                       
             guess = random.choice(self.guessList)
             cell = guess[0]
-            possibleValues = guess[1]
-            guessedValue = possibleValues[0]
+            guessedValue = guess[1]
             self.setSolvedCellValue(cell, guessedValue)
             print("applying guess ", end = " ")
             self.printCell(cell, guessedValue)
             self.currentGuess = guess
-            
-            
-  
+
+
     def processValidGuessAlternative(self):
         """ undoes an invalid guess """
         if self.currentGuess is not None:
             guess = self.currentGuess
             cell = guess[0]
-            possibleValues = guess[1]
-            possibleValues.pop(0)
+            invalidGuessValue = guess[1]
+            #update unsolvedSet
+            possibleValues = self.unsolvedSet[cell]
+            possibleValues.remove(invalidGuessValue)
+
             if len(possibleValues) == 1:
                 self.setSolvedCellValue(cell, possibleValues[0])
-                print("resolved guess ", end = " ")
+                print("***resolved guess !!! ", end = " ")
                 self.printCell(cell, possibleValues[0])
-            # reset current guess
+                print("number of solved cells = {0}".format(len(self.solvedSet)))
+            else:
+                self.unsolvedSet[cell] = possibleValues
+
+            # reset current guess and list of previous guesses
             self.currentGuess = None
+            self.oldGuessList.clear()
 
 
     def setSolvedCellValue(self, cell, value):
         self.solvedSet[cell] = [value]
         self.puzzle[cell[0], cell[1]] = value
+        self.unsolvedSet.pop(cell, None)
 
-    
     def initializeSolvedSet(self):
         """ returns a dictionary. key = cell index, value = cell value """
         self.solvedSet =  { (x,y) : [self.puzzle[x,y]] for x in range(9) for y in range(9) if self.puzzle[x,y] > 0 }
@@ -153,20 +157,22 @@ class PuzzleSolver:
     def getGuessList(unsolvedSet):
         """ returns a list of guesses"""
         guessList = []
-        print(unsolvedSet)
         for loc in unsolvedSet:
             if len(unsolvedSet[loc]) == 2:
-                guessList.append((loc, list(unsolvedSet[loc])))
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
 
         random.shuffle(guessList)
 
         for loc in unsolvedSet:
             if len(unsolvedSet[loc]) == 3:
-                guessList.append((loc, list(unsolvedSet[loc])))
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
 
         for loc in unsolvedSet:
             if len(unsolvedSet[loc]) > 3:
-                guessList.append((loc, list(unsolvedSet[loc])))
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
     
         return guessList
 
@@ -266,7 +272,6 @@ class PuzzleSolver:
         while True:
             status = self.runSolver()
            
-
             if status == PuzzleState.SOLVED:
                 print("Congratulations ! puzzle is solved !!")
                 break
@@ -283,11 +288,7 @@ class PuzzleSolver:
                 self.processValidGuessAlternative()
                 self.updateSnapshot()
                 self.updatePuzzle()
-                print(self.puzzle)
-           
-            # cache the status
-            previousStatus = status
-                        
+                                 
         print(self.puzzle)
         
  
