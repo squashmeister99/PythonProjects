@@ -245,7 +245,7 @@ class PuzzleSolver:
             if len(possibleValues) == 1:
                 self.setSolvedCellValue(cell, possibleValues[0])
                 print("***resolved guess !!! ", end=" ")
-                self.printCell(cell, possibleValues[0])
+                printCell(cell, possibleValues[0])
                 print("# of solved cells= {0}".format(len(self.solvedSet)))
             else:
                 self.unsolvedSet[cell] = possibleValues
