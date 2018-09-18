@@ -47,47 +47,6 @@ def getMissingNumbers(myList):
     return VALID_SET.difference(set(myList))
 
 
-def isSolvedSet(myList):
-    return len(getMissingNumbers(myList)) == 0
-
-
-def isValidSet(myList):
-    """  removes 0s and then checks for duplicates in the list """
-    filledSet = [x for x in myList if x != 0]
-    return len(filledSet) == len(set(filledSet))
-
-
-def isPuzzleValid(puzzle):
-    """ iterates through the puzzle and verifies that it is valid"""
-    rows, cols = puzzle.shape
-    for i in range(rows):
-        if not isValidSet(puzzle[i, :]):
-            return False
-    for i in range(cols):
-        if not isValidSet(puzzle[:, i]):
-            return False
-    for loc in SUB_MATRIX_CENTERS:
-        if not isValidSet(getSubmatrix(puzzle, loc)):
-            return False
-    return True
-
-
-def isPuzzleSolved(puzzle):
-    """ iterates through the puzzle and verifies that it is solved"""
-    rows, cols = puzzle.shape
-    for i in range(rows):
-        if not isSolvedSet(puzzle[i, :]):
-            return False
-    for i in range(cols):
-        if not isSolvedSet(puzzle[:, i]):
-            return False
-    for loc in SUB_MATRIX_CENTERS:
-        if not isSolvedSet(getSubmatrix(puzzle, loc)):
-            return False
-
-    return True
-
-
 def getSubmatrixRange(x):
     """ given a cell location, returns the bounds for the
         corresponding 3x3 submatrix """
@@ -104,8 +63,7 @@ def getSubmatrixRange(x):
 def getSubmatrix(puzzle, loc):
     x_begin, x_end = getSubmatrixRange(loc[0])
     y_begin, y_end = getSubmatrixRange(loc[1])
-    sub_matrix = puzzle[x_begin:x_end, y_begin:y_end]
-    return sub_matrix.ravel()
+    return puzzle[x_begin:x_end, y_begin:y_end].ravel()
 
 
 def printCell(loc, value):
@@ -115,13 +73,10 @@ def printCell(loc, value):
 def solveCell(puzzle, loc):
     """ main solver algorithm for sudoku puzzle returns the
         viable candidates for a given cell"""
-    # evaluate rows and columns
     rowSet = getMissingNumbers(puzzle[loc[0], :])
     colSet = getMissingNumbers(puzzle[:, loc[1]])
-    tempSet = rowSet.intersection(colSet)
     submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
-    candidateSet = tempSet.intersection(submatrixSet)
-    return candidateSet
+    return rowSet.intersection(colSet).intersection(submatrixSet)
 
 
 def setCellValue(puzzle, cell, value):
@@ -207,11 +162,6 @@ class PuzzleSolver:
                 puzzleStatus = PuzzleState.UNSOLVED
                 break
 
-        if not isPuzzleValid(self.puzzle):
-            puzzleStatus = PuzzleState.INVALID
-
-        if isPuzzleSolved(self.puzzle):
-            puzzleStatus = PuzzleState.SOLVED
         return puzzleStatus
 
     def updatePuzzle(self):
@@ -247,8 +197,6 @@ class PuzzleSolver:
                 print("***resolved guess !!! ", end=" ")
                 printCell(cell, possibleValues[0])
                 print("# of solved cells= {0}".format(len(self.solvedSet)))
-            else:
-                self.unsolvedSet[cell] = possibleValues
 
             # reset current guess and list of previous guesses
             self.currentGuess = None
