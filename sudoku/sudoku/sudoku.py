@@ -6,6 +6,7 @@ import os
 from enum import Enum
 import random
 import copy
+import itertools
 
 
 class PuzzleState(Enum):
@@ -19,25 +20,41 @@ SUB_MATRIX_CENTERS = [(1, 1), (1, 4), (1, 7), (4, 1), (4, 4), (4, 7),
                       (7, 1), (7, 4), (7, 7)]
 VALID_INDEXES = {(x, y) for x in range(9) for y in range(9)}
 
+def getGuessCombinations(guessList, n = 2):   
+    newList = []
+    combinationsList = list(itertools.combinations(guessList, n))
+    for smallList in combinationsList:
+        tempDict = {key: value for (key, value) in smallList}
+        newList.append(tempDict)
 
-def getGuessList(unsolvedSet):
+    return newList
+
+        
+def getGuessList(unsolvedSet, level = -1):
     """ returns a list of guesses"""
     guessList = []
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) == 2:
-            for item in unsolvedSet[loc]:
-                guessList.append((loc, item))
-    random.shuffle(guessList)
+    if level == -1:
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) == 2:
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
+        random.shuffle(guessList)
 
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) == 3:
-            for item in unsolvedSet[loc]:
-                guessList.append((loc, item))
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) == 3:
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
 
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) > 3:
-            for item in unsolvedSet[loc]:
-                guessList.append((loc, item))
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) > 3:
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
+    else:
+        for loc in unsolvedSet:
+            if len(unsolvedSet[loc]) == level:
+                for item in unsolvedSet[loc]:
+                    guessList.append((loc, item))
+        random.shuffle(guessList)
 
     return guessList
 
@@ -169,7 +186,7 @@ class PuzzleSolver:
 
     def loadPuzzleDebug(self):
         """ load debug variant of the puzzle """
-        my_data = genfromtxt("easy2.csv", delimiter=',', filling_values=0)
+        my_data = genfromtxt("hard1.csv", delimiter=',', filling_values=0)
         self.puzzle = my_data.astype(int)
         self.initializeSolvedSet()
         print(self.puzzle)
@@ -232,6 +249,18 @@ class PuzzleSolver:
             printCell(cell, guessedValue)
             self.currentGuess = guess
 
+    def applyNextGuess2(self):
+            # get the guess list
+            if not self.guessList:
+                self.guessList = getGuessCombinations(getGuessList(self.unsolvedSet), 3)
+
+            #pop the next guess from the master guessList
+            currectGuessDict = self.guessList.pop()
+            print(currectGuessDict)
+            for key in currectGuessDict:
+                self.setSolvedCellValue(key, currectGuessDict[key])
+
+
     def processValidGuessAlternative(self):
         """ undoes an invalid guess """
         if self.currentGuess is not None:
@@ -266,10 +295,29 @@ class PuzzleSolver:
                           for y in range(9)
                           if self.puzzle[x, y] > 0}
 
-    def solve(self):
+    def solve2(self):
+        numIterations = 0
         while True:
             status = self.runSolver()
+            numIterations += 1
 
+            if status == PuzzleState.SOLVED:
+                print("Congratulations ! puzzle is solved !!")
+                break
+            else:
+                print("puzzle is in unsolved/invalid state")
+                self.createOrRestoreSnapshot()
+                self.updatePuzzle()
+                self.applyNextGuess2()
+
+        print(self.puzzle)
+        print("number of iterations to solve = {0}".format(numIterations))
+
+    def solve(self):
+        numIterations = 0
+        while True:
+            status = self.runSolver()
+            numIterations += 1
             if status == PuzzleState.SOLVED:
                 print("Congratulations ! puzzle is solved !!")
                 break
@@ -288,6 +336,7 @@ class PuzzleSolver:
                 self.updatePuzzle()
 
         print(self.puzzle)
+        print("number of iterations to solve = {0}".format(numIterations))
 
 
 def main():
