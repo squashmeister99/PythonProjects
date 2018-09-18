@@ -14,29 +14,29 @@ class PuzzleState(Enum):
     INVALID = 2
 
 
-VALID_SET = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+VALID_SET = {x for x in range(1, 10)}
 SUB_MATRIX_CENTERS = [(1, 1), (1, 4), (1, 7), (4, 1), (4, 4), (4, 7),
                       (7, 1), (7, 4), (7, 7)]
 VALID_INDEXES = {(x, y) for x in range(9) for y in range(9)}
 
 
-def getGuessList(unsolvedSet):
+def getGuessList(unsolvedDict):
     """ returns a list of guesses"""
     guessList = []
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) == 2:
-            for item in unsolvedSet[loc]:
+    for loc in unsolvedDict:
+        if len(unsolvedDict[loc]) == 2:
+            for item in unsolvedDict[loc]:
                 guessList.append((loc, item))
     random.shuffle(guessList)
 
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) == 3:
-            for item in unsolvedSet[loc]:
+    for loc in unsolvedDict:
+        if len(unsolvedDict[loc]) == 3:
+            for item in unsolvedDict[loc]:
                 guessList.append((loc, item))
 
-    for loc in unsolvedSet:
-        if len(unsolvedSet[loc]) > 3:
-            for item in unsolvedSet[loc]:
+    for loc in unsolvedDict:
+        if len(unsolvedDict[loc]) > 3:
+            for item in unsolvedDict[loc]:
                 guessList.append((loc, item))
 
     return guessList
@@ -89,24 +89,24 @@ class PuzzleSolver:
 
     def __init__(self):
         self.puzzle = None
-        self.solvedSet = {}
-        self.unsolvedSet = {}
-        self.guessList = {}
+        self.solvedDict = {}
+        self.unsolvedDict = {}
+        self.guessesDictionary = {}
         self.currentGuess = None
         self.solvedStateSnapshot = None
         self.unsolvedStateSnapshot = None
 
     def createOrRestoreSnapshot(self):
         if not self.solvedStateSnapshot:
-            self.solvedStateSnapshot = copy.deepcopy(self.solvedSet)
-            self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedSet)
+            self.solvedStateSnapshot = copy.deepcopy(self.solvedDict)
+            self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedDict)
         else:
-            self.solvedSet = copy.deepcopy(self.solvedStateSnapshot)
-            self.unsolvedSet = copy.deepcopy(self.unsolvedStateSnapshot)
+            self.solvedDict = copy.deepcopy(self.solvedStateSnapshot)
+            self.unsolvedDict = copy.deepcopy(self.unsolvedStateSnapshot)
 
     def updateSnapshot(self):
-        self.solvedStateSnapshot = copy.deepcopy(self.solvedSet)
-        self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedSet)
+        self.solvedStateSnapshot = copy.deepcopy(self.solvedDict)
+        self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedDict)
 
     def loadPuzzle(self):
         """ load the puzzle from a file """
@@ -135,7 +135,7 @@ class PuzzleSolver:
 
         while hasChanged and puzzleStatus != PuzzleState.INVALID:
             hasChanged = False
-            unsolvedCells = VALID_INDEXES.difference(self.solvedSet.keys())
+            unsolvedCells = VALID_INDEXES.difference(self.solvedDict.keys())
             for loc in unsolvedCells:
                 candidateSet = solveCell(self.puzzle, loc)
                 optionSize = len(candidateSet)
@@ -148,11 +148,11 @@ class PuzzleSolver:
                     # update the solver
                     value = candidateSet.pop()
                     self.setSolvedCellValue(loc, value)
-                    if loc in self.unsolvedSet.keys():
-                        self.unsolvedSet.pop(loc)
+                    if loc in self.unsolvedDict.keys():
+                        self.unsolvedDict.pop(loc)
                     hasChanged = True
                 else:
-                    self.unsolvedSet[loc] = list(candidateSet)
+                    self.unsolvedDict[loc] = list(candidateSet)
 
             if not unsolvedCells:
                 puzzleStatus = PuzzleState.SOLVED
@@ -166,15 +166,15 @@ class PuzzleSolver:
 
     def updatePuzzle(self):
         self.puzzle = np.zeros((9, 9), dtype=np.int)
-        for key, value in self.solvedSet.items():
+        for key, value in self.solvedDict.items():
             self.puzzle[key[0], key[1]] = value[0]
 
     def applyNextGuess(self):
-            self.guessList = getGuessList(self.unsolvedSet)
+            self.guessesDictionary = getGuessList(self.unsolvedDict)
             if self.currentGuess is not None:
-                self.guessList.remove(self.currentGuess)
+                self.guessesDictionary.remove(self.currentGuess)
 
-            guess = random.choice(self.guessList)
+            guess = random.choice(self.guessesDictionary)
             cell = guess[0]
             guessedValue = guess[1]
             self.setSolvedCellValue(cell, guessedValue)
@@ -189,30 +189,30 @@ class PuzzleSolver:
             cell = guess[0]
             invalidGuessValue = guess[1]
             # update unsolvedSet
-            possibleValues = self.unsolvedSet[cell]
+            possibleValues = self.unsolvedDict[cell]
             possibleValues.remove(invalidGuessValue)
 
             if len(possibleValues) == 1:
                 self.setSolvedCellValue(cell, possibleValues[0])
                 print("***resolved guess !!! ", end=" ")
                 printCell(cell, possibleValues[0])
-                print("# of solved cells= {0}".format(len(self.solvedSet)))
+                print("# of solved cells= {0}".format(len(self.solvedDict)))
 
             # reset current guess and list of previous guesses
             self.currentGuess = None
 
     def setSolvedCellValue(self, cell, value):
-        self.solvedSet[cell] = [value]
+        self.solvedDict[cell] = [value]
         self.puzzle[cell[0], cell[1]] = value
-        self.unsolvedSet.pop(cell, None)
+        self.unsolvedDict.pop(cell, None)
 
     def initializeSolvedSet(self):
         """ returns a dictionary. key = cell index, value = cell value """
-        self.solvedSet = {(x, y):
-                          [self.puzzle[x, y]]
-                          for x in range(9)
-                          for y in range(9)
-                          if self.puzzle[x, y] > 0}
+        self.solvedDict = {(x, y):
+                           [self.puzzle[x, y]]
+                           for x in range(9)
+                           for y in range(9)
+                           if self.puzzle[x, y] > 0}
 
     def solve(self):
         while True:
