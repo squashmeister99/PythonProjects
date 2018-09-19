@@ -1,3 +1,4 @@
+"""sudoku puzzle solver."""
 import numpy as np
 from numpy import genfromtxt
 import tkinter as tk
@@ -9,6 +10,8 @@ import copy
 
 
 class PuzzleState(Enum):
+    """Possible states of sudoku puzzle."""
+
     SOLVED = 0
     UNSOLVED = 1
     INVALID = 2
@@ -23,7 +26,7 @@ MAX_LOOPS = 300
 
 
 def getGuessList(unsolvedDict):
-    """ returns a list of guesses"""
+    """Return a list of guesses."""
     guessList = []
     for loc in unsolvedDict:
         if len(unsolvedDict[loc]) == 2:
@@ -45,13 +48,12 @@ def getGuessList(unsolvedDict):
 
 
 def getMissingNumbers(myList):
-    """ returns the set of missing sudoku numbers in the input list """
+    """Return the set of missing sudoku numbers in the input list."""
     return VALID_SET.difference(set(myList))
 
 
 def getSubmatrixRange(x):
-    """ given a cell location, returns the bounds for the
-        corresponding 3x3 submatrix """
+    """Return associated 3x3 submatrix range."""
     begin = 0
     if 0 <= x <= 2:
         begin = 0
@@ -63,19 +65,20 @@ def getSubmatrixRange(x):
 
 
 def getSubmatrix(puzzle, loc):
+    """Return associated 3x3 submatrix for the cell."""
     x_begin, x_end = getSubmatrixRange(loc[0])
     y_begin, y_end = getSubmatrixRange(loc[1])
     return puzzle[x_begin:x_end, y_begin:y_end].ravel()
 
 
 def printCell(loc, value):
+    """Print current cell value."""
     if IS_MAIN_PROGRAM:
         print("({0}, {1}) = {2}".format(loc[0], loc[1], value))
 
 
 def solveCell(puzzle, loc):
-    """ main solver algorithm for sudoku puzzle returns the
-        viable candidates for a given cell"""
+    """Find viable candidates for a given cell."""
     rowSet = getMissingNumbers(puzzle[loc[0], :])
     colSet = getMissingNumbers(puzzle[:, loc[1]])
     submatrixSet = getMissingNumbers(getSubmatrix(puzzle, loc))
@@ -83,14 +86,15 @@ def solveCell(puzzle, loc):
 
 
 def setCellValue(puzzle, cell, value):
-    """ cell is a tuple of the x,y indexes of the 2D array.
-        This methods updates the specifies cell in the puzzle"""
+    """Set cell value."""
     puzzle[cell[0], cell[1]] = value
 
 
 class PuzzleSolver:
+    """Class for solving puzzle."""
 
     def __init__(self):
+        """Initialize class members."""
         self.puzzle = None
         self.solvedDict = {}
         self.unsolvedDict = {}
@@ -100,6 +104,7 @@ class PuzzleSolver:
         self.unsolvedStateSnapshot = None
 
     def createOrRestoreSnapshot(self):
+        """Create or restore a snapshot of valid solved puzzle state."""
         if not self.solvedStateSnapshot:
             self.solvedStateSnapshot = copy.deepcopy(self.solvedDict)
             self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedDict)
@@ -108,16 +113,17 @@ class PuzzleSolver:
             self.unsolvedDict = copy.deepcopy(self.unsolvedStateSnapshot)
 
     def updateSnapshot(self):
+        """Update the snapshot."""
         self.solvedStateSnapshot = copy.deepcopy(self.solvedDict)
         self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedDict)
 
-    def loadPuzzle(self, file_path = None):
+    def loadPuzzle(self, file_path=None):
+        """Load puzzle from a file."""
         if not file_path:
-            """ load the puzzle from a file """
             tk.Tk().withdraw()
             file_path = filedialog.askopenfilename(
                                 initialdir=os.getcwd(),
-                                title="select a csv file containing sudoku puzzle")
+                                title="select puzzle file")
             if not file_path:
                 exit()
 
@@ -127,15 +133,8 @@ class PuzzleSolver:
         if IS_MAIN_PROGRAM:
             print(self.puzzle)
 
-    def loadPuzzleDebug(self):
-        """ load debug variant of the puzzle """
-        my_data = genfromtxt("easy2.csv", delimiter=',', filling_values=0)
-        self.puzzle = my_data.astype(int)
-        self.initializeSolvedSet()
-        if IS_MAIN_PROGRAM:
-            print(self.puzzle)
-
     def runSolver(self):
+        """Solver loop."""
         puzzleStatus = PuzzleState.UNSOLVED
         hasChanged = True
 
@@ -171,27 +170,28 @@ class PuzzleSolver:
         return puzzleStatus
 
     def updatePuzzle(self):
+        """Update puzzle from the solver."""
         self.puzzle = np.zeros((9, 9), dtype=np.int)
         for key, value in self.solvedDict.items():
             self.puzzle[key[0], key[1]] = value[0]
 
     def applyNextGuess(self):
-            self.guessesDictionary = getGuessList(self.unsolvedDict)
-            if self.currentGuess is not None:
-                self.guessesDictionary.remove(self.currentGuess)
+        """Apply next guess."""
+        self.guessesDictionary = getGuessList(self.unsolvedDict)
+        if self.currentGuess is not None:
+            self.guessesDictionary.remove(self.currentGuess)
 
-            guess = random.choice(self.guessesDictionary)
-            cell = guess[0]
-            guessedValue = guess[1]
-            self.setSolvedCellValue(cell, guessedValue)
-            self.currentGuess = guess
-            if IS_MAIN_PROGRAM:
-                print("applying guess ", end=" ")
-                printCell(cell, guessedValue)
-
+        guess = random.choice(self.guessesDictionary)
+        cell = guess[0]
+        guessedValue = guess[1]
+        self.setSolvedCellValue(cell, guessedValue)
+        self.currentGuess = guess
+        if IS_MAIN_PROGRAM:
+            print("applying guess ", end=" ")
+            printCell(cell, guessedValue)
 
     def processValidGuessAlternative(self):
-        """ undoes an invalid guess """
+        """Process invalid guess alternative."""
         if self.currentGuess is not None:
             guess = self.currentGuess
             cell = guess[0]
@@ -205,18 +205,19 @@ class PuzzleSolver:
                 if IS_MAIN_PROGRAM:
                     print("***resolved guess !!! ", end=" ")
                     printCell(cell, possibleValues[0])
-                    print("# of solved cells= {0}".format(len(self.solvedDict)))
+                    print("# solved cells={0}".format(len(self.solvedDict)))
 
             # reset current guess and list of previous guesses
             self.currentGuess = None
 
     def setSolvedCellValue(self, cell, value):
+        """Set cell value."""
         self.solvedDict[cell] = [value]
         self.puzzle[cell[0], cell[1]] = value
         self.unsolvedDict.pop(cell, None)
 
     def initializeSolvedSet(self):
-        """ returns a dictionary. key = cell index, value = cell value """
+        """Return the dictionary of initial solved cells."""
         self.solvedDict = {(x, y):
                            [self.puzzle[x, y]]
                            for x in range(9)
@@ -224,6 +225,7 @@ class PuzzleSolver:
                            if self.puzzle[x, y] > 0}
 
     def solve(self):
+        """Solver loop."""
         loopIndex = 0
         while True:
             status = self.runSolver()
@@ -231,7 +233,7 @@ class PuzzleSolver:
 
             if status == PuzzleState.SOLVED:
                 if IS_MAIN_PROGRAM:
-                    print("Congratulations ! puzzle is solved in {0} iterations !!".format(loopIndex))
+                    print("puzzle solved in {0} iterations".format(loopIndex))
                 break
 
             if status == PuzzleState.UNSOLVED:
@@ -254,7 +256,7 @@ class PuzzleSolver:
             if loopIndex == MAX_LOOPS:
                 if IS_MAIN_PROGRAM:
                     print("cannot solve puzzle :-(")
-                break;
+                break
 
         if IS_MAIN_PROGRAM:
             print(self.puzzle)
@@ -262,6 +264,7 @@ class PuzzleSolver:
 
 
 def main():
+    """Load and solve a sudoku puzzle."""
     p = PuzzleSolver()
     p.loadPuzzle()
     p.solve()
