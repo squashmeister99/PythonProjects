@@ -18,6 +18,7 @@ VALID_SET = {x for x in range(1, 10)}
 SUB_MATRIX_CENTERS = [(1, 1), (1, 4), (1, 7), (4, 1), (4, 4), (4, 7),
                       (7, 1), (7, 4), (7, 7)]
 VALID_INDEXES = {(x, y) for x in range(9) for y in range(9)}
+IS_MAIN_PROGRAM = False
 
 
 def getGuessList(unsolvedDict):
@@ -67,7 +68,8 @@ def getSubmatrix(puzzle, loc):
 
 
 def printCell(loc, value):
-    print("({0}, {1}) = {2}".format(loc[0], loc[1], value))
+    if IS_MAIN_PROGRAM:
+        print("({0}, {1}) = {2}".format(loc[0], loc[1], value))
 
 
 def solveCell(puzzle, loc):
@@ -120,14 +122,16 @@ class PuzzleSolver:
         my_data = genfromtxt(file_path, delimiter=',', filling_values=0)
         self.puzzle = my_data.astype(int)
         self.initializeSolvedSet()
-        print(self.puzzle)
+        if IS_MAIN_PROGRAM:
+            print(self.puzzle)
 
     def loadPuzzleDebug(self):
         """ load debug variant of the puzzle """
         my_data = genfromtxt("easy2.csv", delimiter=',', filling_values=0)
         self.puzzle = my_data.astype(int)
         self.initializeSolvedSet()
-        print(self.puzzle)
+        if IS_MAIN_PROGRAM:
+            print(self.puzzle)
 
     def runSolver(self):
         puzzleStatus = PuzzleState.UNSOLVED
@@ -178,9 +182,11 @@ class PuzzleSolver:
             cell = guess[0]
             guessedValue = guess[1]
             self.setSolvedCellValue(cell, guessedValue)
-            print("applying guess ", end=" ")
-            printCell(cell, guessedValue)
             self.currentGuess = guess
+            if IS_MAIN_PROGRAM:
+                print("applying guess ", end=" ")
+                printCell(cell, guessedValue)
+
 
     def processValidGuessAlternative(self):
         """ undoes an invalid guess """
@@ -194,9 +200,10 @@ class PuzzleSolver:
 
             if len(possibleValues) == 1:
                 self.setSolvedCellValue(cell, possibleValues[0])
-                print("***resolved guess !!! ", end=" ")
-                printCell(cell, possibleValues[0])
-                print("# of solved cells= {0}".format(len(self.solvedDict)))
+                if IS_MAIN_PROGRAM:
+                    print("***resolved guess !!! ", end=" ")
+                    printCell(cell, possibleValues[0])
+                    print("# of solved cells= {0}".format(len(self.solvedDict)))
 
             # reset current guess and list of previous guesses
             self.currentGuess = None
@@ -219,23 +226,29 @@ class PuzzleSolver:
             status = self.runSolver()
 
             if status == PuzzleState.SOLVED:
-                print("Congratulations ! puzzle is solved !!")
+                if IS_MAIN_PROGRAM:
+                    print("Congratulations ! puzzle is solved !!")
                 break
 
             if status == PuzzleState.UNSOLVED:
-                print("puzzle is in unsolved state")
+                if IS_MAIN_PROGRAM:
+                    print("puzzle is in unsolved state")
+
                 self.createOrRestoreSnapshot()
                 self.updatePuzzle()
                 self.applyNextGuess()
 
             if status == PuzzleState.INVALID:
-                print("puzzle is in invalid state")
+                if IS_MAIN_PROGRAM:
+                    print("puzzle is in invalid state")
+
                 self.createOrRestoreSnapshot()
                 self.processValidGuessAlternative()
                 self.updateSnapshot()
                 self.updatePuzzle()
 
-        print(self.puzzle)
+        if IS_MAIN_PROGRAM:
+            print(self.puzzle)
 
 
 def main():
@@ -245,4 +258,5 @@ def main():
 
 
 if __name__ == "__main__":
+    IS_MAIN_PROGRAM = True
     main()
