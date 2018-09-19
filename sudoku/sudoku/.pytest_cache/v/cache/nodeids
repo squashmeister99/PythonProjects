@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 [
   "test_sudoku.py::test_easy",
   "test_sudoku.py::test_medium",
@@ -7,6 +6,3 @@
   "test_sudoku.py::test_ohdear",
   "test_sudoku.py::test_checkAnswer"
 ]
-=======
-[]
->>>>>>> 4397defe5b1188c8b276ebf9eac724d7c3aeb1f7

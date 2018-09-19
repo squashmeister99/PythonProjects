@@ -122,7 +122,7 @@ class PuzzleSolver:
         if not file_path:
             tk.Tk().withdraw()
             file_path = filedialog.askopenfilename(
-                                initialdir=os.getcwd(),
+                                initialdir=os.path.join(os.getcwd(), "puzzles"),
                                 title="select puzzle file")
             if not file_path:
                 exit()
