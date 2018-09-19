@@ -1,0 +1,8 @@
+[
+  "test_sudoku.py::test_easy",
+  "test_sudoku.py::test_medium",
+  "test_sudoku.py::test_hard",
+  "test_sudoku.py::test_extreme",
+  "test_sudoku.py::test_ohdear",
+  "test_sudoku.py::test_checkAnswer"
+]

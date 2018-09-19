@@ -19,6 +19,7 @@ SUB_MATRIX_CENTERS = [(1, 1), (1, 4), (1, 7), (4, 1), (4, 4), (4, 7),
                       (7, 1), (7, 4), (7, 7)]
 VALID_INDEXES = {(x, y) for x in range(9) for y in range(9)}
 IS_MAIN_PROGRAM = False
+MAX_LOOPS = 300
 
 
 def getGuessList(unsolvedDict):
@@ -110,14 +111,15 @@ class PuzzleSolver:
         self.solvedStateSnapshot = copy.deepcopy(self.solvedDict)
         self.unsolvedStateSnapshot = copy.deepcopy(self.unsolvedDict)
 
-    def loadPuzzle(self):
-        """ load the puzzle from a file """
-        tk.Tk().withdraw()
-        file_path = filedialog.askopenfilename(
-                            initialdir=os.getcwd(),
-                            title="select a csv file containing sudoku puzzle")
+    def loadPuzzle(self, file_path = None):
         if not file_path:
-            exit()
+            """ load the puzzle from a file """
+            tk.Tk().withdraw()
+            file_path = filedialog.askopenfilename(
+                                initialdir=os.getcwd(),
+                                title="select a csv file containing sudoku puzzle")
+            if not file_path:
+                exit()
 
         my_data = genfromtxt(file_path, delimiter=',', filling_values=0)
         self.puzzle = my_data.astype(int)
@@ -222,12 +224,14 @@ class PuzzleSolver:
                            if self.puzzle[x, y] > 0}
 
     def solve(self):
+        loopIndex = 0
         while True:
             status = self.runSolver()
+            loopIndex += 1
 
             if status == PuzzleState.SOLVED:
                 if IS_MAIN_PROGRAM:
-                    print("Congratulations ! puzzle is solved !!")
+                    print("Congratulations ! puzzle is solved in {0} iterations !!".format(loopIndex))
                 break
 
             if status == PuzzleState.UNSOLVED:
@@ -247,8 +251,14 @@ class PuzzleSolver:
                 self.updateSnapshot()
                 self.updatePuzzle()
 
+            if loopIndex == MAX_LOOPS:
+                if IS_MAIN_PROGRAM:
+                    print("cannot solve puzzle :-(")
+                break;
+
         if IS_MAIN_PROGRAM:
             print(self.puzzle)
+        return status
 
 
 def main():
