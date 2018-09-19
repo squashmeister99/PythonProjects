@@ -47,7 +47,3 @@ def test_checkAnswer():
     solution.loadPuzzle(os.path.join(os.getcwd(), "puzzles", "extreme5_solution.csv"))
     assert(status == sudoku.PuzzleState.SOLVED)
     assert(np.array_equal(p.puzzle, solution.puzzle))
-
-if __name__ == "__main__":
-    test_easy()
-    test_medium()

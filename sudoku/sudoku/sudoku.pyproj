@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a8ff8fc6-e5d2-4acd-b28d-155a4e454a12</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>test_sudoku.py</StartupFile>
+    <StartupFile>sudoku.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
