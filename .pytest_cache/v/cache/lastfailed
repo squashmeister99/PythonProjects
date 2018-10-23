@@ -1,0 +1,8 @@
+{
+  "sudoku/sudoku/test_sudoku.py::test_checkAnswer": true,
+  "sudoku/sudoku/test_sudoku.py::test_easy": true,
+  "sudoku/sudoku/test_sudoku.py::test_extreme": true,
+  "sudoku/sudoku/test_sudoku.py::test_hard": true,
+  "sudoku/sudoku/test_sudoku.py::test_medium": true,
+  "sudoku/sudoku/test_sudoku.py::test_ohdear": true
+}
