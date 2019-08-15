@@ -19,7 +19,7 @@ def getBoardWithValidMoves(board, tile):
     return boardCopy
 
 def getValidMoves(board, tile):
-    validMoves = [[x,y] for x in range(WIDTH) for y in range(HEIGHT) if isValidMove(board, tile, (x,y))]
+    validMoves = [[x,y] for x in range(WIDTH) for y in range(HEIGHT) if isValidMove(board, tile, (x,y)) != False]
     return validMoves
 
 
@@ -37,7 +37,7 @@ def getScoreOfBoard(board):
 
 def enterPlayerTile():
     tile = ""
-    while not (tile == "X" or tile == "O"):
+    while tile not in ["X", "O"]:
         print("do you want to be X or O ?")
         tile = input().upper()
     
@@ -175,20 +175,25 @@ def isOnBoard(loc):
 
 def isValidMove(board, tile, loc):
     if board[loc[0]][loc[1]] != " " or not isOnBoard(loc):
-           return False
-    otherTile = "O" if tile == "O" else "X"
+        return False
+
+    otherTile = "O" if tile == "X" else "O"
+
     tilesToFlip = []
     for xdir, ydir in NEIGHBOURS:
         x, y = loc[0], loc[1]
         x+= xdir
         y+= ydir
-        if isOnBoard((x,y)) and board[x][y] == tile:
-            while True:
-                x -= xdir
-                y -= ydir
-                if (x,y) == loc:
-                    break;
-                tilesToFlip.append([x, y])
+        while isOnBoard((x,y)) and board[x][y] == otherTile:
+            x+= xdir
+            y+= ydir
+            if isOnBoard((x,y)) and board[x][y] == tile:
+                while True:
+                    x -= xdir
+                    y -= ydir
+                    if (x,y) == loc:
+                        break;
+                    tilesToFlip.append([x, y])
 
     if len(tilesToFlip) == 0:
         return False
