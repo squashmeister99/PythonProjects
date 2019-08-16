@@ -1,14 +1,13 @@
 
 # Code you have previously used to load data
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import Imputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+from sklearn.svm import LinearSVC
 
 # Path of the file to read. We changed the directory structure to simplify submitting to a competition
 iowa_file_path = '../data/train.csv'
@@ -43,27 +42,21 @@ train_X_scaled = num_pipeline.fit_transform(train_X)
 val_X_scaled = num_pipeline.transform(val_X)
 
 # Define the model. Set random_state to 1
-rf_model = RandomForestRegressor(random_state=1, n_estimators=300)
+svm_model = LinearSVC(loss="hinge", max_iter=50000)
 
-rf_model.fit(train_X_scaled, train_y)
-rf_val_predictions = rf_model.predict(val_X_scaled)
-rf_val_mae = mean_absolute_error(rf_val_predictions, val_y)
+svm_model.fit(train_X_scaled, train_y)
+svm_val_predictions = svm_model.predict(val_X_scaled)
+svm_val_mae = mean_absolute_error(svm_val_predictions, val_y)
 
-print("Validation MAE for Random Forest Model: {:,.0f}".format(rf_val_mae))
+print("Validation MAE for LinearSVC Model: {:,.0f}".format(svm_val_mae))
 
 # now try a grid search to get optimal hyperparameters
 param_grid = [{'n_estimators': [ 300, 500]},
               ]
-
-grid_search = GridSearchCV(rf_model, param_grid, scoring = 'neg_mean_absolute_error', cv=5)
-grid_search.fit(train_X_scaled, train_y)
-print(grid_search.best_params_)
-print(grid_search.best_score_)
-
 # train the best model on the full data
 full_x_scaled = num_pipeline.fit_transform(X)
-rf_model_full = RandomForestRegressor(random_state=1, n_estimators=500)
-rf_model_full.fit(full_x_scaled, y)
+svm_model_full = LinearSVC(loss="hinge", C=10,  max_iter=20000)
+svm_model_full.fit(full_x_scaled, y)
 
 
 # path to file you will use for predictions
@@ -78,7 +71,7 @@ test_X = test_data2.select_dtypes(include=numerics)
 test_X_scaled = num_pipeline.transform(test_X)
 
 # make predictions which we will submit. 
-test_preds = rf_model_full.predict(test_X_scaled)
+test_preds = svm_model_full.predict(test_X_scaled)
 
 # The lines below shows how to save predictions in format used for competition scoring
 
