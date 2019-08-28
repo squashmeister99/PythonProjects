@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import (StandardScaler, MinMaxScaler, PowerTransformer, RobustScaler)
+from sklearn.preprocessing import (StandardScaler, MinMaxScaler, PowerTransformer, RobustScaler, FunctionTransformer)
 from sklearn.pipeline import Pipeline
 from scipy import stats
 import numpy as np
