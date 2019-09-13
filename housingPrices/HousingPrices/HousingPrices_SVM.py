@@ -66,8 +66,8 @@ log_features_names = ["LotFrontage", "LotArea", "1stFlrSF", "GrLivArea", "OpenPo
 
 log_pipeline = Pipeline(steps=[
     ('imputer', SimpleImputer(strategy='median')),
-    ('scaler', FunctionTransformer(np.log1p, validate=False)),
-    ('logscaler', StandardScaler())])
+    ('logscaler', FunctionTransformer(np.log1p, validate=False)),
+    ('scaler', StandardScaler())])
 
 #kbinDiscretizer features
 year_features_names = ['YearBuilt', 'YearRemodAdd', 'GarageYrBlt', 'YrSold']
