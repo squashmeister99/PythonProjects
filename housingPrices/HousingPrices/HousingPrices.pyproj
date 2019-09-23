@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>6a33808d-486b-4a80-b3e6-3900072037ec</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>HousingPrices_SVM.py</StartupFile>
+    <StartupFile>HousingPrices_randomForest.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

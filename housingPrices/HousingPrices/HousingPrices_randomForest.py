@@ -9,6 +9,8 @@ from sklearn.preprocessing import (StandardScaler, MinMaxScaler, PowerTransforme
 from sklearn.pipeline import Pipeline
 from scipy import stats
 import numpy as np
+import xgboost as xgb
+
 
 # CONSTANTS
 CONDITIONS_DICT = {"NA": 0, "NaN": 0, "nan": 0, "Po": 2, "Fa": 3, "TA": 4, "Gd":6, "Ex": 10}
