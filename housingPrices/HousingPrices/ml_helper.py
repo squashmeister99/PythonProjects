@@ -6,13 +6,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-%matplotlib inline
 
 def outlierDetect_IsolationForest(df, contaminationLevel = 0.02):
     df_numeric = df.select_dtypes(exclude=object) 
     imp_mean = SimpleImputer()
     df_numeric_t = imp_mean.fit_transform(df_numeric)
-    clf = IsolationForest( behaviour = 'new', contaminationLevel)
+    clf = IsolationForest( behaviour = 'new', contamination = contaminationLevel)
     preds = clf.fit_predict(df_numeric_t)
     outliers = np.where(preds == -1)
     df_out = df.drop(labels = outliers[0], inplace=False, errors = "ignore")
