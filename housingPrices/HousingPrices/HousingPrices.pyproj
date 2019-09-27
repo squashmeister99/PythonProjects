@@ -22,8 +22,14 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AveragedModels.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="HousingPrices_randomForest.py" />
     <Compile Include="HousingPrices_SVM.py" />
+    <Compile Include="ml_helper.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
