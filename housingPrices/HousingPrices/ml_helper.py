@@ -7,28 +7,39 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def outlierDetect_IsolationForest(df, contaminationLevel = 0.02):
-    df_numeric = df.select_dtypes(exclude=object) 
-    imp_mean = SimpleImputer()
-    df_numeric_t = imp_mean.fit_transform(df_numeric)
-    clf = IsolationForest( behaviour = 'new', contamination = contaminationLevel)
-    preds = clf.fit_predict(df_numeric_t)
-    outliers = np.where(preds == -1)
-    df_out = df.drop(labels = outliers[0], inplace=False, errors = "ignore")
-    print("number of outliers = {0}".format(len(outliers[0])))
-    return df_out, outliers
-
-# outlierDetect_ZScore
-def outlierDetect_ZScore(df, zValue = 3):
-    df_numeric = df.select_dtypes(exclude=object) 
+# plot correlations
+def plotCoorelations(df):
+    # remove non_numeric features  
+    corr = df.corr()
+    corr.style.background_gradient(cmap='coolwarm').set_precision(2)
     
-    z = np.abs(stats.zscore(df_numeric))
-    outliers = np.where(z > zValue)
-    # drop outliers 
-    df_out = df.drop(labels = outliers[0], inplace=False, errors = "ignore")
+def plotHeatmap(df):
+    corrmat = df.corr()
+    f, ax = plt.subplots(figsize=(12, 9))
+    sns.heatmap(corrmat, vmax=.8, square=True)
+    plt.show()
 
+# define a method to use Isolation Forest for outlier detection
+def outlierRemoval_IsolationForest(X, y, outlierFraction = 0.02):
+    clf = IsolationForest( behaviour = 'new', contamination = outlierFraction)
+    preds = clf.fit_predict(X)
+    outliers = np.where(preds == -1)
+    return dropOutliers(X, y, outliers)
+
+def dropOutliers(X, y, outliers):
     print("number of outliers = {0}".format(len(outliers[0])))
-    return home_data_out, outliers
+    # drop outliers
+    X_clean = np.delete(X, outliers[0], axis = 0)
+    y_clean = np.delete(y.values, outliers[0])
+    return X_clean, y_clean, outliers[0] 
+
+# define a method to use Isolation Forest for outlier detection
+def outlierRemoval_ZScore(X, y, zValue = 3, bypass=False):
+    if bypass:
+        return X, y, []
+    z = np.abs(stats.zscore(X))
+    outliers = np.where(z > zValue)
+    return dropOutliers(X, y, outliers)
 
 def columnsWithMissingData(X, threshold = 0.9):
     # check for null items
@@ -43,8 +54,3 @@ def columnsWithMissingData(X, threshold = 0.9):
     zero_count_above_threshold = zero_count.loc[zero_count > threshold]
     return pd.concat([null_count_above_threshold, zero_count_above_threshold])
 
-def plotHeatmap(df):
-    corrmat = df.corr()
-    f, ax = plt.subplots(figsize=(12, 9))
-    sns.heatmap(corrmat, vmax=.8, square=True)
-    plt.show()
