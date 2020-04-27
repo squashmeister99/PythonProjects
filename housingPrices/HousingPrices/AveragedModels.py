@@ -1,11 +1,18 @@
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
 from sklearn.model_selection import KFold, cross_val_score, train_test_split
 import numpy as np
+import ml_helper as mlh
 
 class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
-    def __init__(self, models):
+    def __init__(self, models, weights = None):
         self.models_ = models
+        if weights is not None:
+            assert len(models) == len(weights) # ensure dimensions match
+            self.weights_ = mlh.calculateWeights(weights)
+        else:
+            self_weights_ = [1.0/len(self.models_)]*len(self.models_)
         print(self.models_)
+        print(self.weights_)
         
     # define clones of the original models to fit the data in
     def fit(self, X, y):
@@ -23,7 +30,7 @@ class AveragingModels(BaseEstimator, RegressorMixin, TransformerMixin):
         predictions = np.column_stack([
             model.predict(X) for model in self.models_
         ])
-        return np.mean(predictions, axis=1)  
+        return np.average(predictions, weights= self.weights_, axis=1)  
     
 
 class StackingAveragedModels(BaseEstimator, RegressorMixin, TransformerMixin):
