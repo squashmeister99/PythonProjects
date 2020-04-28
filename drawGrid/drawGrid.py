@@ -22,13 +22,13 @@ class Box:
         self.ymax = ymax
         self.state = state
         self.size = self.xmax - self.xmin
-        print("min = [{0}, {1}], max = [{2}, {3}]".format(xmin, ymin, xmax, ymax))
-
+        
     # check if the specified coordinates are inside the box
     def isWithinBounds(self, x, y):
         a = (self.xmin <= x and x < self.xmax) 
         b = (self.ymin <= y and y < self.ymax)
-        return a and b
+        result = a and b
+        return result
 
     # stub method
     def drawCircle(self, t):
@@ -65,22 +65,22 @@ def playGame(iterations, x_dim, y_dim):
         t1_stop = perf_counter()
         print("Elapsed time for loop: {0} sec", t1_stop - t1_start)
 
-
+# get the index of the box which on which the user clicked
 def onClickFunction(x, y):
     print("user clicked at coordinates ({0},{1})".format(x, y))
 
-    rowIndex = 0
+    i = 0
     for row in master_list:
-        colIndex = 0
+        j = 0
         for box in row:
-            if box.isWithinBounds(x, y):
-                print("box index is [{0}, {1}]".format(rowIndex, colIndex))
-            colIndex += 1
-
-        rowIndex += 1
-
-
-    return
+            result =  box.isWithinBounds(x, y)
+            if result:
+                print("index = [{0}, {1}]".format(i, j))
+                return
+            else:
+                j+= 1
+        i += 1
+                
 
 
 def setupScreen():
@@ -115,7 +115,7 @@ def draw_board(args):
             ymin = start_y + i*BOX_SIZE;
             ymax = start_y + (i + 1)*BOX_SIZE;
 
-            box = Box(xmin, xmax, ymin, ymax, False)
+            box = Box(xmin, ymin, xmax, ymax, False)
             box.drawBox(t)
             nestedList.append(box)
 
