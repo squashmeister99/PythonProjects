@@ -15,7 +15,8 @@ master_list = []
 
 class Box:
 
-    def __init__(self, xmin, ymin, xmax, ymax, state = False):
+    def __init__(self, t, xmin, ymin, xmax, ymax, state = False):
+        self.t = t
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
@@ -31,17 +32,24 @@ class Box:
         return result
 
     # stub method
-    def drawCircle(self, t):
+    def drawCircle(self):
+        self.t.penup()
+        self.t.goto(self.xmin + self.size/2, self.ymin + self.size/4)
+        self.t.pendown()
+        self.t.pen(pencolor="black", fillcolor="black", pensize=3, speed=0)
+        self.t.begin_fill()
+        self.t.circle(self.size/4)
+        self.t.end_fill()       
         return
 
-    def drawBox(self, t):
-        t.penup()
-        t.goto(self.xmin, self.ymin)
-        t.pendown()
+    def drawBox(self):
+        self.t.penup()
+        self.t.goto(self.xmin, self.ymin)
+        self.t.pendown()
 
         for i in range(0, 4):
-            t.forward(self.size)
-            t.left(90)
+            self.t.forward(self.size)
+            self.t.left(90)
         return
 
 
@@ -55,6 +63,7 @@ def draw_circle(t, x, y, fill_color=BG_COLOR):
     t.circle(RADIUS)
     t.end_fill()
     return
+
 
 
 def playGame(iterations, x_dim, y_dim):
@@ -76,6 +85,7 @@ def onClickFunction(x, y):
             result =  box.isWithinBounds(x, y)
             if result:
                 print("index = [{0}, {1}]".format(i, j))
+                box.drawCircle()
                 return
             else:
                 j+= 1
@@ -115,8 +125,8 @@ def draw_board(args):
             ymin = start_y + i*BOX_SIZE;
             ymax = start_y + (i + 1)*BOX_SIZE;
 
-            box = Box(xmin, ymin, xmax, ymax, False)
-            box.drawBox(t)
+            box = Box(t, xmin, ymin, xmax, ymax, False)
+            box.drawBox()
             nestedList.append(box)
 
         master_list.append(nestedList)
