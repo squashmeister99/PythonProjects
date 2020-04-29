@@ -64,6 +64,8 @@ class Grid:
     def __init__(self):
         self.cells = []
         self.t = None
+        self.x = 0
+        self.y = 0
 
     def setupTurtle(self):
         self.t = turtle.Turtle()
@@ -77,6 +79,9 @@ class Grid:
 
     def draw(self, x, y):
         self.setupTurtle()
+        self.x = x
+        self.y = y
+
         start_x = 0
         start_y = 0
         for i in range(0, x):
@@ -92,6 +97,36 @@ class Grid:
 
             self.cells.append(nestedList)
         self.t.getscreen().update()   # update the screen
+
+    def getNeighbours(self, x, y):
+        xi = []
+        xi.append(x)
+        xi.append(x-1) if x > 0 else None
+        xi.append(x+1) if x < self.x - 1 else None
+
+        yi = []
+        yi.append(y)
+        yi.append(y-1) if y > 0 else None
+        yi.append(y+1) if y < self.y - 1 else None
+
+        masterList = []
+        for a in xi:
+            for b in yi:
+                if [a, b] != [x, y]:
+                    masterList.append([a, b])
+
+        return masterList
+
+    def getNeighbourCount(self, x, y):
+        neighbours = self.getNeighbours(x, y)
+        count = 0
+        for item in neighbours:
+            cell = self.cells[item[0]][item[1]]
+            if cell.state:
+                count += 1
+
+        #print("neighbor count for [{0}, {1}] = {2}".format(x, y, count))
+        return count
 
 
 # globals
@@ -117,6 +152,13 @@ def main():
     args = parser.parse_args()
 
     grid.draw(args.x, args.y)
+
+    input("press any key after updating a few cells !")
+
+    grid.getNeighbourCount(0, 0)
+    grid.getNeighbourCount(2, 2)
+    grid.getNeighbourCount(5, 5)
+
     input("press any key to quit !")
 
 
