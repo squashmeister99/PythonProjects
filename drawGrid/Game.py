@@ -1,5 +1,6 @@
 import turtle
 import argparse
+import time
 
 # constants
 BG_COLOR = "white"
@@ -66,6 +67,7 @@ class Grid:
         self.t = None
         self.x = 0
         self.y = 0
+        self.neighbors = {}  # dictionary to store neighbours
 
     def setupTurtle(self):
         self.t = turtle.Turtle()
@@ -117,16 +119,59 @@ class Grid:
 
         return masterList
 
-    def getNeighbourCount(self, x, y):
-        neighbours = self.getNeighbours(x, y)
+    # get count of neighbors that are alive
+    def getLiveNeighbourCount(self, neighbours):
         count = 0
         for item in neighbours:
             cell = self.cells[item[0]][item[1]]
             if cell.state:
                 count += 1
-
-        #print("neighbor count for [{0}, {1}] = {2}".format(x, y, count))
         return count
+
+    def cacheNeighborInfo(self):
+        for i in range(0, self.x):
+            for j in range(0, self.y):
+                self.neighbors[(i, j)] = self.getNeighbours(i, j)
+
+    def shouldFlipState(self, x, y):
+        # get the current cell
+        cell = self.cells[x][y]
+        liveCount = self.getLiveNeighbourCount(self.neighbors[(x, y)])
+        flipState = False
+        if cell.state:
+            # cell is currently alive. keep it alive if it has 2 or 3 neighbors
+            if not(liveCount == 2 or liveCount == 3):
+                flipState = True
+            else:
+                flipState = False
+        else:
+            # cell is currently dead. make it alive it has 3 neighbors
+            if liveCount == 3:
+                flipState = True
+            else:
+                flipState = False
+
+        return flipState
+
+    def play(self, iterations):
+        # cache neighbour info
+        self.cacheNeighborInfo()
+
+        cells_to_flip = []
+        for x in range(0, iterations):
+            # loop over all the cells
+            for i in range(0, self.x):
+                for j in range(0, self.y):
+                    if self.shouldFlipState(i, j):
+                        cells_to_flip.append([i, j])
+
+            # update the states of the cells
+            for item in cells_to_flip:
+                cell = self.cells[item[0]][item[1]]
+                cell.flip()
+
+            # add a delay to activate animation
+            time.sleep(5)
 
 
 # globals
@@ -153,13 +198,15 @@ def main():
 
     grid.draw(args.x, args.y)
 
-    input("press any key after updating a few cells !")
+    result = input(
+        "press any key to start game after updating a few cells ! or q to quit \n")
 
-    grid.getNeighbourCount(0, 0)
-    grid.getNeighbourCount(2, 2)
-    grid.getNeighbourCount(5, 5)
+    while result != "q":
+        # play for N iterations
+        grid.play(args.i)
 
-    input("press any key to quit !")
+        result = input(
+            "press any key to start game after updating a few cells ! or q to quit \n")
 
 
 if __name__ == "__main__":
