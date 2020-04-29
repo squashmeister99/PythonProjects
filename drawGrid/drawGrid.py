@@ -1,19 +1,17 @@
 import turtle
-import random
 import argparse
-from time import perf_counter, sleep
 
 # constants
-PEN_COLOR = "blue"
 BG_COLOR = "white"
-FILL_COLOR = "black"
-BOX_SIZE = 16
-RADIUS = BOX_SIZE/4
+PEN_COLOR = "blue"
+BOX_SIZE = 32
 
-#globals
-master_list = []
+class Cell:
 
-class Box:
+    # constants 
+    FILL_COLOR = "black"
+    BG_COLOR = "white"
+    RADIUS = BOX_SIZE/4
 
     def __init__(self, t, xmin, ymin, xmax, ymax, state = False):
         self.t = t
@@ -24,7 +22,7 @@ class Box:
         self.state = state
         self.size = self.xmax - self.xmin
         
-    # check if the specified coordinates are inside the box
+    # check if the specified coordinates are inside the cell
     def isWithinBounds(self, x, y):
         a = (self.xmin <= x and x < self.xmax) 
         b = (self.ymin <= y and y < self.ymax)
@@ -32,17 +30,25 @@ class Box:
         return result
 
     # stub method
-    def drawCircle(self):
+    def flip(self):
+        self.state = not(self.state) # flip the state
+        if self.state:
+            color = Cell.FILL_COLOR
+        else:
+            color = Cell.BG_COLOR
+
         self.t.penup()
         self.t.goto(self.xmin + self.size/2, self.ymin + self.size/4)
         self.t.pendown()
-        self.t.pen(pencolor="black", fillcolor="black", pensize=3, speed=0)
+        self.t.pen(pensize=2, pencolor= color, fillcolor=color, speed=0)
         self.t.begin_fill()
         self.t.circle(self.size/4)
+        self.t.getscreen().update()
         self.t.end_fill()       
         return
 
-    def drawBox(self):
+
+    def draw(self):
         self.t.penup()
         self.t.goto(self.xmin, self.ymin)
         self.t.pendown()
@@ -52,90 +58,55 @@ class Box:
             self.t.left(90)
         return
 
+class Grid:
 
-# draws a circle of the specified radius
-def draw_circle(t, x, y, fill_color=BG_COLOR):
-    t.penup()
-    t.goto(x, y)
-    t.pendown()
-    t.pen(pencolor="purple", fillcolor="orange", pensize=10, speed=0)
-    t.begin_fill()
-    t.circle(RADIUS)
-    t.end_fill()
-    return
+    def __init__(self):
+        self.cells = []
+        self.t = None
 
 
+    def setupTurtle(self): 
+        self.t = turtle.Turtle()
+        self.t.hideturtle()
+        self.t.pen(pencolor=PEN_COLOR, speed=0)
+        screen = self.t.getscreen()
+        screen.bgcolor(BG_COLOR)
+        screen.title('Game of Life')
+        screen.tracer(0, 0)
+        screen.onclick(onClickFunction)
 
-def playGame(iterations, x_dim, y_dim):
-    for x in range(iterations):
 
-        t1_start = perf_counter()
-        num_squares = x_dim*y_dim
-        t1_stop = perf_counter()
-        print("Elapsed time for loop: {0} sec", t1_stop - t1_start)
+    def draw(self, x, y):
+        self.setupTurtle()
+        start_x = 0
+        start_y = 0
+        for i in range(0, x):
+            nestedList = []
+            for j in range(0, y):
+                xmin = start_x + j*BOX_SIZE;
+                xmax = start_x + (j + 1)*BOX_SIZE;
+                ymin = start_y + i*BOX_SIZE;
+                ymax = start_y + (i + 1)*BOX_SIZE;
+                cell = Cell(self.t, xmin, ymin, xmax, ymax, False)
+                cell.draw()
+                nestedList.append(cell)
 
-# get the index of the box which on which the user clicked
+            self.cells.append(nestedList)
+        self.t.getscreen().update()   # update the screen
+
+
+# globals
+grid = Grid()
+
+# get the index of the cell which on which the user clicked
 def onClickFunction(x, y):
-    print("user clicked at coordinates ({0},{1})".format(x, y))
 
-    i = 0
-    for row in master_list:
-        j = 0
-        for box in row:
-            result =  box.isWithinBounds(x, y)
+    for row in grid.cells:
+        for cell in row:
+            result =  cell.isWithinBounds(x, y)
             if result:
-                print("index = [{0}, {1}]".format(i, j))
-                box.drawCircle()
+                cell.flip()
                 return
-            else:
-                j+= 1
-        i += 1
-                
-
-
-def setupScreen():
-    screen = turtle.Screen()
-    screen.bgcolor(BG_COLOR)
-    screen.title('Game of Life')
-    screen.tracer(0, 0)
-    screen.onclick(onClickFunction)
-    return screen
-
-
-def setupGridTurtle():
-    t = turtle.Turtle()
-    t.hideturtle()
-    t.pen(pencolor=PEN_COLOR, speed=0)
-    return t
-
-
-def draw_board(args):
-    screen = setupScreen()
-    t = setupGridTurtle()
-    start_x = 0
-    start_y = 0
-    x_dim = args.x
-    y_dim = args.y
-    iterations = args.i
-    for i in range(0, x_dim):
-        nestedList = []
-        for j in range(0, y_dim):
-            xmin = start_x + j*BOX_SIZE;
-            xmax = start_x + (j + 1)*BOX_SIZE;
-            ymin = start_y + i*BOX_SIZE;
-            ymax = start_y + (i + 1)*BOX_SIZE;
-
-            box = Box(t, xmin, ymin, xmax, ymax, False)
-            box.drawBox()
-            nestedList.append(box)
-
-        master_list.append(nestedList)
-
-    screen.update()   # update the screen
-
-    # playGame(iterations, x_dim, y_dim)
-    # screen.exitonclick()
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -144,9 +115,11 @@ def main():
     parser.add_argument('i', type=int, default=5, help="iterations")
     args = parser.parse_args()
 
-    draw_board(args)
-
+    grid.draw(args.x, args.y)
     input("press any key to quit !")
+
+
+
 
 
 if __name__ == "__main__":
