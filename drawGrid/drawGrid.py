@@ -6,14 +6,15 @@ BG_COLOR = "white"
 PEN_COLOR = "blue"
 BOX_SIZE = 32
 
+
 class Cell:
 
-    # constants 
+    # constants
     FILL_COLOR = "black"
     BG_COLOR = "white"
     RADIUS = BOX_SIZE/4
 
-    def __init__(self, t, xmin, ymin, xmax, ymax, state = False):
+    def __init__(self, t, xmin, ymin, xmax, ymax, state=False):
         self.t = t
         self.xmin = xmin
         self.ymin = ymin
@@ -21,17 +22,17 @@ class Cell:
         self.ymax = ymax
         self.state = state
         self.size = self.xmax - self.xmin
-        
+
     # check if the specified coordinates are inside the cell
     def isWithinBounds(self, x, y):
-        a = (self.xmin <= x and x < self.xmax) 
+        a = (self.xmin <= x and x < self.xmax)
         b = (self.ymin <= y and y < self.ymax)
         result = a and b
         return result
 
     # stub method
     def flip(self):
-        self.state = not(self.state) # flip the state
+        self.state = not(self.state)  # flip the state
         if self.state:
             color = Cell.FILL_COLOR
         else:
@@ -40,13 +41,12 @@ class Cell:
         self.t.penup()
         self.t.goto(self.xmin + self.size/2, self.ymin + self.size/4)
         self.t.pendown()
-        self.t.pen(pensize=2, pencolor= color, fillcolor=color, speed=0)
+        self.t.pen(pensize=2, pencolor=color, fillcolor=color, speed=0)
         self.t.begin_fill()
         self.t.circle(self.size/4)
         self.t.getscreen().update()
-        self.t.end_fill()       
+        self.t.end_fill()
         return
-
 
     def draw(self):
         self.t.penup()
@@ -58,14 +58,14 @@ class Cell:
             self.t.left(90)
         return
 
+
 class Grid:
 
     def __init__(self):
         self.cells = []
         self.t = None
 
-
-    def setupTurtle(self): 
+    def setupTurtle(self):
         self.t = turtle.Turtle()
         self.t.hideturtle()
         self.t.pen(pencolor=PEN_COLOR, speed=0)
@@ -75,7 +75,6 @@ class Grid:
         screen.tracer(0, 0)
         screen.onclick(onClickFunction)
 
-
     def draw(self, x, y):
         self.setupTurtle()
         start_x = 0
@@ -83,10 +82,10 @@ class Grid:
         for i in range(0, x):
             nestedList = []
             for j in range(0, y):
-                xmin = start_x + j*BOX_SIZE;
-                xmax = start_x + (j + 1)*BOX_SIZE;
-                ymin = start_y + i*BOX_SIZE;
-                ymax = start_y + (i + 1)*BOX_SIZE;
+                xmin = start_x + j*BOX_SIZE
+                xmax = start_x + (j + 1)*BOX_SIZE
+                ymin = start_y + i*BOX_SIZE
+                ymax = start_y + (i + 1)*BOX_SIZE
                 cell = Cell(self.t, xmin, ymin, xmax, ymax, False)
                 cell.draw()
                 nestedList.append(cell)
@@ -98,28 +97,27 @@ class Grid:
 # globals
 grid = Grid()
 
+
 # get the index of the cell which on which the user clicked
 def onClickFunction(x, y):
 
     for row in grid.cells:
         for cell in row:
-            result =  cell.isWithinBounds(x, y)
+            result = cell.isWithinBounds(x, y)
             if result:
                 cell.flip()
                 return
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('x', type=int, default=15, help="x dimension")
     parser.add_argument('y', type=int, default=10, help="y dimension")
-    parser.add_argument('i', type=int, default=5, help="iterations")
+    parser.add_argument('i', type=int, default=5, help="generations")
     args = parser.parse_args()
 
     grid.draw(args.x, args.y)
     input("press any key to quit !")
-
-
-
 
 
 if __name__ == "__main__":
