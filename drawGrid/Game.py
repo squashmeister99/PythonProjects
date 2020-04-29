@@ -5,7 +5,7 @@ import time
 # constants
 BG_COLOR = "white"
 PEN_COLOR = "blue"
-BOX_SIZE = 32
+BOX_SIZE = 24
 
 
 class Cell:
@@ -45,7 +45,6 @@ class Cell:
         self.t.pen(pensize=2, pencolor=color, fillcolor=color, speed=0)
         self.t.begin_fill()
         self.t.circle(self.size/4)
-        self.t.getscreen().update()
         self.t.end_fill()
         return
 
@@ -77,6 +76,7 @@ class Grid:
         screen.bgcolor(BG_COLOR)
         screen.title('Game of Life')
         screen.tracer(0, 0)
+        screen.setup(1600, 1200)
         screen.onclick(onClickFunction)
 
     def draw(self, x, y):
@@ -84,8 +84,8 @@ class Grid:
         self.x = x
         self.y = y
 
-        start_x = 0
-        start_y = 0
+        start_x = -x*15
+        start_y = -y*15
         for i in range(0, x):
             nestedList = []
             for j in range(0, y):
@@ -104,12 +104,12 @@ class Grid:
         xi = []
         xi.append(x)
         xi.append(x-1) if x > 0 else None
-        xi.append(x+1) if x < self.x - 1 else None
+        xi.append(x+1) if x < (self.x - 1) else None
 
         yi = []
         yi.append(y)
         yi.append(y-1) if y > 0 else None
-        yi.append(y+1) if y < self.y - 1 else None
+        yi.append(y+1) if y < (self.y - 1) else None
 
         masterList = []
         for a in xi:
@@ -159,6 +159,7 @@ class Grid:
 
         cells_to_flip = []
         for x in range(0, iterations):
+            cells_to_flip.clear()
             # loop over all the cells
             for i in range(0, self.x):
                 for j in range(0, self.y):
@@ -170,8 +171,7 @@ class Grid:
                 cell = self.cells[item[0]][item[1]]
                 cell.flip()
 
-            # add a delay to activate animation
-            time.sleep(5)
+            self.t.getscreen().update()   # update the screen
 
 
 # globals
