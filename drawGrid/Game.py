@@ -9,6 +9,7 @@ BOX_SIZE = 24
 
 
 class Cell:
+    ''' Represents a single cell in the game of life. the cell can be alive or dead '''
 
     # constants
     FILL_COLOR = "black"
@@ -26,6 +27,7 @@ class Cell:
 
     # check if the specified coordinates are inside the cell
     def isWithinBounds(self, x, y):
+        ''' Returns True if the specified coordinates are inside the cell. False otherwise '''
         a = (self.xmin <= x and x < self.xmax)
         b = (self.ymin <= y and y < self.ymax)
         result = a and b
@@ -70,6 +72,7 @@ class Grid:
 
     def setupTurtle(self):
         self.t = turtle.Turtle()
+        self.t.setundobuffer(None) # disable undo buffer to save memory
         self.t.hideturtle()
         self.t.pen(pencolor=PEN_COLOR, speed=0)
         screen = self.t.getscreen()
@@ -133,8 +136,8 @@ class Grid:
             for j in range(0, self.y):
                 self.neighbors[(i, j)] = self.getNeighbours(i, j)
 
-    def shouldFlipState(self, x, y):
-        # get the current cell
+    def shouldCellFlipState(self, x, y):
+        # get cell by index
         cell = self.cells[x][y]
         liveCount = self.getLiveNeighbourCount(self.neighbors[(x, y)])
         flipState = False
@@ -154,17 +157,14 @@ class Grid:
         return flipState
 
     def play(self, iterations):
-        # cache neighbour info
         self.cacheNeighborInfo()
-
         cells_to_flip = []
         for x in range(0, iterations):
             cells_to_flip.clear()
-            # loop over all the cells
-            for i in range(0, self.x):
-                for j in range(0, self.y):
-                    if self.shouldFlipState(i, j):
-                        cells_to_flip.append([i, j])
+
+            for key in self.neighbors:
+                    if self.shouldCellFlipState(key[0], key[1]):
+                        cells_to_flip.append([key[0], key[1]])
 
             # update the states of the cells
             for item in cells_to_flip:
@@ -180,7 +180,6 @@ grid = Grid()
 
 # get the index of the cell which on which the user clicked
 def onClickFunction(x, y):
-
     for row in grid.cells:
         for cell in row:
             result = cell.isWithinBounds(x, y)
@@ -190,6 +189,8 @@ def onClickFunction(x, y):
 
 
 def main():
+    print("Using help:")
+    help(Cell)
     parser = argparse.ArgumentParser()
     parser.add_argument('x', type=int, default=15, help="x dimension")
     parser.add_argument('y', type=int, default=10, help="y dimension")
