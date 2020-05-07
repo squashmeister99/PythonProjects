@@ -1,12 +1,23 @@
 import turtle
 import argparse
 import time
+from functools import wraps
 
 # constants
 BG_COLOR = "white"
 PEN_COLOR = "blue"
 BOX_SIZE = 24
 
+
+def timethis(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        r = func(*args, **kwargs)
+        end = time.perf_counter()
+        print('{}.{} : {}'.format(func.__module__, func.__name__, end - start))
+        return r
+    return wrapper
 
 class Cell:
     ''' Represents a single cell in the game of life. the cell can be alive or dead '''
@@ -156,22 +167,25 @@ class Grid:
 
         return flipState
 
+    @timethis
     def play(self, iterations):
         self.cacheNeighborInfo()
         cells_to_flip = []
+
         for x in range(0, iterations):
             cells_to_flip.clear()
-
-            for key in self.neighbors:
-                    if self.shouldCellFlipState(key[0], key[1]):
+            neighbors = self.neighbors
+            grid = self;
+            for key in neighbors:
+                    if grid.shouldCellFlipState(key[0], key[1]):
                         cells_to_flip.append([key[0], key[1]])
 
             # update the states of the cells
             for item in cells_to_flip:
-                cell = self.cells[item[0]][item[1]]
+                cell = grid.cells[item[0]][item[1]]
                 cell.flip()
 
-            self.t.getscreen().update()   # update the screen
+            grid.t.getscreen().update()   # update the screen
 
 
 # globals
