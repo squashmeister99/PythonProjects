@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>11d3d296-5a4e-4259-9ac4-74b36c52003e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>primeNumbers.py</StartupFile>
+    <StartupFile>primeNumbers_fast.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,7 +24,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="primeNumbers.py" />
+    <Compile Include="primeNumbers_euler.py" />
+    <Compile Include="primeNumbers_fast.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

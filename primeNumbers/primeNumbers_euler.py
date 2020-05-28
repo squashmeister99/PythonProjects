@@ -1,5 +1,7 @@
 import argparse
 from time import perf_counter
+from guppy import hpy
+
 
 def getFirstNumber(myset):
     for x in myset:
@@ -16,9 +18,10 @@ def main():
     '''Sieve of Eratosthenes prime search algoritm'''
     primes = []
 
-   
+    
     mylist = [x for x in range(2, upperLimit + 1)]
-
+    h = hpy()
+    print(h.heap())
     start = perf_counter()
     while len(mylist) :
         # add first number to the prime list
@@ -29,6 +32,9 @@ def main():
         mylist.remove(currentPrime)
 
     end = perf_counter()
+
+    print(h.heap())
+
     print("Sieve of Euler executed in {0} seconds".format(end - start))
     print("number of primes <= {0} = {1}".format(upperLimit, len(primes)))
 
